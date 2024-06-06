@@ -10,6 +10,9 @@ use object::{elf::SHT_ARM_ATTRIBUTES, Endianness, File, Object, ObjectSection, S
 struct Args {
     #[arg(short, long)]
     file: PathBuf,
+
+    #[arg(short, long)]
+    show_defaults: bool,
 }
 
 fn main() -> Result<()> {
@@ -36,7 +39,7 @@ fn main() -> Result<()> {
         }
         let attributes = section.into_public_attributes()?;
         println!("    File scope:");
-        println!("{}", attributes.file_scope.display(8));
+        println!("{}", attributes.file_scope.display(8, args.show_defaults));
     }
 
     Ok(())

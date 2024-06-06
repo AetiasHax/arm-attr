@@ -288,20 +288,39 @@ pub struct AttributeScope {
 }
 
 impl AttributeScope {
-    pub fn display(&self, indent: usize) -> AttributeScopeDisplay {
-        AttributeScopeDisplay { scope: self, indent }
+    pub fn display(&self, indent: usize, show_defaults: bool) -> AttributeScopeDisplay {
+        AttributeScopeDisplay {
+            scope: self,
+            indent,
+            show_defaults,
+        }
     }
 }
 
 pub struct AttributeScopeDisplay<'a> {
     scope: &'a AttributeScope,
     indent: usize,
+    show_defaults: bool,
 }
 
 impl<'a> AttributeScopeDisplay<'a> {
-    fn display_field<T: Display>(&self, f: &mut std::fmt::Formatter<'_>, field: &str, value: &Option<T>) -> std::fmt::Result {
+    fn display_field<T: Display + Default>(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+        field: &str,
+        value: &Option<T>,
+    ) -> std::fmt::Result {
         if let Some(value) = value {
             writeln!(f, "{}{} : {}", format_args!("{: >1$}", "", self.indent), field, value)
+        } else if self.show_defaults {
+            let value = T::default();
+            writeln!(
+                f,
+                "{}{} : [default] {}",
+                format_args!("{: >1$}", "", self.indent),
+                field,
+                value
+            )
         } else {
             Ok(())
         }

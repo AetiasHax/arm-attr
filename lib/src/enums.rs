@@ -2,8 +2,10 @@ use std::fmt::Display;
 
 use crate::tag::Tag;
 
-#[derive(Clone, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, PartialEq, Eq, Debug, Hash, Default)]
 pub enum CpuName {
+    #[default]
+    None,
     /// ARM7EJ-S
     Arm7TejS,
     /// ARM7TM
@@ -100,6 +102,7 @@ pub enum CpuName {
 impl From<&str> for CpuName {
     fn from(value: &str) -> Self {
         match value {
+            "" => Self::None,
             "ARM7EJ-S" => Self::Arm7TejS,
             "ARM7TM" => Self::Arm7Tm,
             "ARM7TDM" => Self::Arm7Tdm,
@@ -153,6 +156,7 @@ impl From<&str> for CpuName {
 impl Display for CpuName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::None => Ok(()),
             Self::Arm7TejS => write!(f, "ARM7EJ-S"),
             Self::Arm7Tm => write!(f, "ARM7TM"),
             Self::Arm7Tdm => write!(f, "ARM7TDM"),
@@ -203,9 +207,10 @@ impl Display for CpuName {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum CpuArch {
     /// Pre-ARMv4
+    #[default]
     PreV4,
     /// ARMv4
     V4,
@@ -347,9 +352,10 @@ impl Display for CpuArch {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum CpuArchProfile {
     /// Architecture profile not applicable
+    #[default]
     NotApplicable,
     /// Application profile (A)
     Application,
@@ -401,9 +407,10 @@ impl Display for CpuArchProfile {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum ArmIsaUse {
     /// ARM code is not allowed.
+    #[default]
     None,
     /// ARM code is allowed.
     Allowed,
@@ -440,9 +447,10 @@ impl Display for ArmIsaUse {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum ThumbIsaUse {
     /// Thumb code is not allowed.
+    #[default]
     None,
     /// Deprecated since ARMv8-M.baseline, use Allowed instead.
     ///
@@ -493,9 +501,10 @@ impl Display for ThumbIsaUse {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum FpArch {
     /// No instructions requiring FP hardware.
+    #[default]
     None,
     /// v1 FP ISA is allowed.
     V1,
@@ -567,9 +576,10 @@ impl Display for FpArch {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum WmmxArch {
     /// Not allowed.
+    #[default]
     None,
     /// WMMX v1 allowed.
     V1,
@@ -611,9 +621,10 @@ impl Display for WmmxArch {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AsimdArch {
     /// Not allowed.
+    #[default]
     None,
     /// Advanced SIMDv1 (Neon) allowed.
     V1,
@@ -665,9 +676,10 @@ impl Display for AsimdArch {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum MveArch {
     /// Not allowed.
+    #[default]
     None,
     /// Integer M-profile Vector Extension allowed.
     Int,
@@ -709,9 +721,10 @@ impl Display for MveArch {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum FpHpExt {
     /// Half-precision allowed if they exist in the instructions sets indicated by `FpArch` and `AsimdArch`.
+    #[default]
     IfExists,
     /// Half-precision allowed as an extension to VFPv3 and ASIMDv1, in addition to those indicated by `FpArch` and
     /// `AsimdArch`.
@@ -755,9 +768,10 @@ impl Display for FpHpExt {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum CpuUnalignedAccess {
     /// Not allowed.
+    #[default]
     None,
     /// v6-style unaligned data accesses allowed.
     Allowed,
@@ -794,9 +808,10 @@ impl Display for CpuUnalignedAccess {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum T2EeUse {
     /// Not allowed.
+    #[default]
     None,
     /// The T2EE extension is allowed.
     Allowed,
@@ -833,9 +848,10 @@ impl Display for T2EeUse {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum VirtualUse {
     /// Not allowed.
+    #[default]
     None,
     /// The TrustZone extension is allowed.
     TrustZone,
@@ -882,9 +898,10 @@ impl Display for VirtualUse {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum MpExtUse {
     // Not allowed.
+    #[default]
     None,
     // Use of the ARMv7 MP extension is allowed.
     Allowed,
@@ -921,9 +938,10 @@ impl Display for MpExtUse {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum DivUse {
     /// Divide instructions may be used if they exist in the architecture, as indicated by `CpuArch` and `CpuArchProfile`.
+    #[default]
     IfExists,
     /// Not allowed.
     None,
@@ -965,9 +983,10 @@ impl Display for DivUse {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum DspExt {
     /// DSP instructions may be used if they exist in the architecture, as indicated by `CpuArch`.
+    #[default]
     IfExists,
     /// DSP instructions are allowed.
     Allowed,
@@ -1004,9 +1023,10 @@ impl Display for DspExt {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum PacExt {
     /// Not allowed.
+    #[default]
     None,
     /// PAC/AUT instructions are allowed in the NOP space.
     OnlyNopSpace,
@@ -1048,9 +1068,10 @@ impl Display for PacExt {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum BtiExt {
     /// Not allowed.
+    #[default]
     None,
     /// BTI instructions are allowed in the NOP space.
     OnlyNopSpace,
@@ -1093,9 +1114,10 @@ impl Display for BtiExt {
 }
 
 /// Procedure-call standard (PCS) configuration
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum PcsConfig {
     /// No standard configuration used.
+    #[default]
     None,
     BarePlatform,
     LinuxApplication,
@@ -1157,9 +1179,10 @@ impl Display for PcsConfig {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AbiPcsR9Use {
     /// R9 used as V6, a callee-saved register.
+    #[default]
     V6,
     /// R9 used as SB, a global Static Base register.
     Sb,
@@ -1206,9 +1229,10 @@ impl Display for AbiPcsR9Use {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AbiPcsRwData {
     /// RW static data is allowed to be addressed absolutely.
+    #[default]
     Abs,
     /// RW static data is allowed to be addressed PC-relative.
     PcRel,
@@ -1255,9 +1279,10 @@ impl Display for AbiPcsRwData {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AbiPcsRoData {
     /// RO static data is allowed to be addressed absolutely.
+    #[default]
     Abs,
     /// RO static data is allowed to be addressed PC-relative.
     PcRel,
@@ -1299,9 +1324,10 @@ impl Display for AbiPcsRoData {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AbiPcsGotUse {
     /// Not allowed.
+    #[default]
     None,
     /// Imported data is allowed to be addressed directly.
     Direct,
@@ -1343,9 +1369,10 @@ impl Display for AbiPcsGotUse {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AbiPcsWcharT {
     /// Not allowed.
+    #[default]
     None,
     /// wchar_t of size 2 allowed.
     Size2,
@@ -1387,9 +1414,10 @@ impl Display for AbiPcsWcharT {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AbiEnumSize {
     /// Not allowed.
+    #[default]
     None,
     /// Enums are as small as possible while big enough to contain all values.
     SmallestSize,
@@ -1436,9 +1464,10 @@ impl Display for AbiEnumSize {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AbiAlignNeeded {
     /// Code does not depend on alignment of 8-byte data or data with extended alignment (> 8-byte).
+    #[default]
     None,
     /// Code depends on 8-byte alignment of 8-byte data.
     Align8,
@@ -1491,9 +1520,10 @@ impl Display for AbiAlignNeeded {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AbiAlignPreserved {
     /// Code does not preserve alignment of 8-byte data or data with extended alignment (> 8-byte).
+    #[default]
     None,
     /// Code preserves 8-byte alignment of 8-byte data.
     Align8,
@@ -1546,9 +1576,10 @@ impl Display for AbiAlignPreserved {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AbiFpRounding {
     /// The code uses IEEE-754 round-to-nearest rounding mode.
+    #[default]
     Nearest,
     /// The code decides IEEE-754 rounding modea at run-time.
     RunTime,
@@ -1585,9 +1616,10 @@ impl Display for AbiFpRounding {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AbiFpDenormal {
     /// Denormal numbers might be flushed to (+) zero.
+    #[default]
     DontCare,
     /// The code depends on IEEE-754 denormal numbers.
     Ieee754,
@@ -1629,9 +1661,10 @@ impl Display for AbiFpDenormal {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AbiFpExceptions {
     /// The code should not check for inexact results.
+    #[default]
     None,
     /// The code checks for the IEEE-754 inexact exception.
     CheckInexact,
@@ -1668,9 +1701,10 @@ impl Display for AbiFpExceptions {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AbiFpUserExceptions {
     /// The code should not enable or use IEEE-754 user exceptions.
+    #[default]
     None,
     /// The code uses IEEE-754 user exceptions.
     Enabled,
@@ -1707,9 +1741,10 @@ impl Display for AbiFpUserExceptions {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AbiFpNumberModel {
     /// The code does not use floating point numbers.
+    #[default]
     None,
     /// The code allows the IEEE-754 normal numbers only.
     Normal,
@@ -1756,9 +1791,10 @@ impl Display for AbiFpNumberModel {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AbiFp16BitFormat {
     /// The code does not use 16-bit floats.
+    #[default]
     None,
     /// The code uses the IEEE-754 format for 16-bit floats.
     Ieee754,
@@ -1800,9 +1836,10 @@ impl Display for AbiFp16BitFormat {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AbiHardFpUse {
     /// Floating point use is implied by `FpArch`.
+    #[default]
     Implied,
     /// The code executes on the single-precision variant derived from `FpArch`.
     DerivedSingle,
@@ -1849,9 +1886,10 @@ impl Display for AbiHardFpUse {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AbiVfpArgs {
     /// Float parameter/result passing conforms to AAPCS, base variant.
+    #[default]
     Base,
     /// Float parameter/result passing conforms to AAPCS, VFP variant.
     Vfp,
@@ -1899,9 +1937,10 @@ impl Display for AbiVfpArgs {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AbiWmmxArgs {
     /// WMMX parameter/result passing conforms to AAPCS, base variant.
+    #[default]
     Base,
     /// WMMX parameter/result passing conforms to Intel's WMMX conventions.
     Intel,
@@ -1943,9 +1982,10 @@ impl Display for AbiWmmxArgs {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum FramePointerUse {
     /// The code does not conform to the rules of using the frame pointer.
+    #[default]
     None,
     /// The code creates a frame record for all functions that can modify the link register (LR).
     WithRecords,
@@ -1987,9 +2027,10 @@ impl Display for FramePointerUse {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum BtiUse {
     /// The code is compiled without branch target enforcement.
+    #[default]
     None,
     /// The code is compiled with branch target enforcement.
     Enabled,
@@ -2026,9 +2067,10 @@ impl Display for BtiUse {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum PacretUse {
     /// The code is compiled without return address signing and authentication.
+    #[default]
     None,
     /// The code is compiled with return address signing and authentication.
     Enabled,
@@ -2065,9 +2107,10 @@ impl Display for PacretUse {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AbiOptGoals {
     /// The code has no optimization goals.
+    #[default]
     None,
     /// Favor speed, preserve small size and debug experience.
     FavorSpeed,
@@ -2129,9 +2172,10 @@ impl Display for AbiOptGoals {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AbiFpOptGoals {
     /// The code has no FP optimization goals.
+    #[default]
     None,
     /// Favor speed, preserve small size and accuracy.
     FavorSpeed,
@@ -2193,9 +2237,10 @@ impl Display for AbiFpOptGoals {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, PartialEq, Eq, Debug, Hash, Default)]
 pub enum Compat {
     /// This entity has no toolchain-specific requirements.
+    #[default]
     Always,
     /// This entity conforms to the ABI when built by the given toolchain.
     ByToolchain(String),
@@ -2231,7 +2276,10 @@ impl Display for Compat {
     }
 }
 
+#[derive(Clone, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AlsoCompatWith {
+    #[default]
+    None,
     Arch(CpuArch),
     Unknown(Tag),
 }
@@ -2248,16 +2296,18 @@ impl AlsoCompatWith {
 impl Display for AlsoCompatWith {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::None => Ok(()),
             Self::Arch(arch) => write!(f, "{}", arch),
             Self::Unknown(tag) => write!(f, "<unknown: {:?}>", tag),
         }
     }
 }
 
+#[derive(Clone, PartialEq, Eq, Debug, Hash, Default)]
 pub struct Conform(pub String);
 
 impl Display for Conform {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "\"{}\"", self.0)
     }
 }
