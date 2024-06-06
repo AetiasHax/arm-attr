@@ -1,0 +1,14 @@
+[package]
+name = "arm-attr-cli"
+version = "0.1.0"
+edition = "2021"
+authors = ["Aetias <aetias@outlook.com>"]
+license = "MIT"
+description = "Lists ARM build attributes of an ELF file"
+repository = "https://github.com/AetiasHax/arm-attr"
+
+[dependencies]
+anyhow = "1.0.86"
+arm-attr = { path = "../lib" }
+clap = { version = "4.5.4", features = ["derive"] }
+object = "0.36.0"
