@@ -34,11 +34,9 @@ fn main() -> Result<()> {
         if !section.is_aeabi() {
             continue;
         }
-        let public = section.public_attributes()?;
-        let attributes = public.attributes()?;
-        for attribute in attributes.map(|a| a.unwrap()) {
-            println!("\t{:?}", attribute);
-        }
+        let attributes = section.into_public_attributes()?;
+        println!("    File scope:");
+        println!("{}", attributes.file_scope.display(8));
     }
 
     Ok(())

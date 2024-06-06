@@ -17,6 +17,15 @@ pub(crate) fn read_uleb128(cursor: &mut Cursor<&[u8]>) -> Result<u8, ReadError> 
     }
 }
 
+pub(crate) fn read_u8(cursor: &mut Cursor<&[u8]>) -> Result<u8, ReadError> {
+    let mut buf = [0u8; 1];
+    match cursor.read(&mut buf) {
+        Ok(1) => Ok(buf[0]),
+        Ok(_) => Err(ReadError::Eof),
+        Err(e) => Err(ReadError::Io(e)),
+    }
+}
+
 pub(crate) fn read_uleb128_list(cursor: &mut Cursor<&[u8]>) -> Result<Box<[u8]>, ReadError> {
     let mut list = vec![];
     cursor.read_until(0, &mut list).map_err(ReadError::Io)?;

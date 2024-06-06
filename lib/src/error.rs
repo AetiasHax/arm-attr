@@ -24,6 +24,12 @@ pub enum ReadError {
 pub enum PublicAttrsError {
     #[error("invalid subsection name, should be 'aeabi'")]
     InvalidName(String),
+    #[error("tag error")]
+    Tag(TagError),
+    #[error("no tags")]
+    NoTags,
+    #[error("expected first tag to be a file tag")]
+    NoFileTag,
 }
 
 #[derive(Error, Debug)]
@@ -34,4 +40,6 @@ pub enum TagError {
     Read(ReadError),
     #[error("invalid scope tag")]
     InvalidScopeTag,
+    #[error("expected null")]
+    ExpectedNull,
 }

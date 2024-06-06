@@ -5,10 +5,10 @@ use std::io::Cursor;
 use crate::{
     error::TagError,
     globals::*,
-    read::{read_string, read_u32, read_uleb128, read_uleb128_list, Endian},
+    read::{read_string, read_u32, read_u8, read_uleb128, read_uleb128_list, Endian},
 };
 
-#[derive(Clone, PartialEq, Eq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug, Hash)]
 pub enum Tag {
     /// Tag_File
     File { size: u32 },
@@ -73,7 +73,7 @@ pub enum Tag {
     /// Tag_ABI_FP_optimization_goals
     AbiFpOptimizationGoals(u8),
     /// Tag_compatibility
-    Compatibility(String),
+    Compatibility { flag: u8, vendor_name: String },
     /// Tag_CPU_unaligned_access
     CpuUnalignedAccess(u8),
     /// Tag_FP_HP_extension
@@ -95,7 +95,7 @@ pub enum Tag {
     /// Tag_nodefaults
     NoDefaults(u8),
     /// Tag_also_compatible_with
-    AlsoCompatibleWith(String),
+    AlsoCompatibleWith(Box<Tag>),
     /// Tag_conformance
     Conformance(String),
     /// Tag_T2EE_use
@@ -111,6 +111,20 @@ pub enum Tag {
 }
 
 impl Tag {
+    pub fn is_uleb128(&self) -> bool {
+        !matches!(
+            self,
+            Tag::File { size: _ }
+                | Tag::Section { size: _, sections: _ }
+                | Tag::Symbol { size: _, symbols: _ }
+                | Tag::CpuRawName(_)
+                | Tag::CpuName(_)
+                | Tag::Compatibility { flag: _, vendor_name: _ }
+                | Tag::AlsoCompatibleWith(_)
+                | Tag::Conformance(_)
+        )
+    }
+
     pub fn raw_tag(&self) -> u8 {
         match self {
             Tag::File { size: _ } => Tag_File,
@@ -144,7 +158,7 @@ impl Tag {
             Tag::AbiWmmxArgs(_) => Tag_ABI_WMMX_args,
             Tag::AbiOptimizationGoals(_) => Tag_ABI_optimization_goals,
             Tag::AbiFpOptimizationGoals(_) => Tag_ABI_FP_optimization_goals,
-            Tag::Compatibility(_) => Tag_compatibility,
+            Tag::Compatibility { flag: _, vendor_name: _ } => Tag_compatibility,
             Tag::CpuUnalignedAccess(_) => Tag_CPU_unaligned_access,
             Tag::FpHpExtension(_) => Tag_FP_HP_extension,
             Tag::AbiFp16BitFormat(_) => Tag_ABI_FP_16bit_format,
@@ -207,7 +221,10 @@ impl Tag {
             Tag_ABI_WMMX_args => Tag::AbiWmmxArgs(read_uleb128(cursor).map_err(TagError::Read)?),
             Tag_ABI_optimization_goals => Tag::AbiOptimizationGoals(read_uleb128(cursor).map_err(TagError::Read)?),
             Tag_ABI_FP_optimization_goals => Tag::AbiFpOptimizationGoals(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_compatibility => Tag::Compatibility(read_string(cursor).map_err(TagError::Read)?),
+            Tag_compatibility => Tag::Compatibility {
+                flag: read_uleb128(cursor).map_err(TagError::Read)?,
+                vendor_name: read_string(cursor).map_err(TagError::Read)?,
+            },
             Tag_CPU_unaligned_access => Tag::CpuUnalignedAccess(read_uleb128(cursor).map_err(TagError::Read)?),
             Tag_FP_HP_extension => Tag::FpHpExtension(read_uleb128(cursor).map_err(TagError::Read)?),
             Tag_ABI_FP_16bit_format => Tag::AbiFp16BitFormat(read_uleb128(cursor).map_err(TagError::Read)?),
@@ -218,7 +235,16 @@ impl Tag {
             Tag_PAC_extension => Tag::PacExtension(read_uleb128(cursor).map_err(TagError::Read)?),
             Tag_BTI_extension => Tag::BtiExtension(read_uleb128(cursor).map_err(TagError::Read)?),
             Tag_nodefaults => Tag::NoDefaults(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_also_compatible_with => Tag::AlsoCompatibleWith(read_string(cursor).map_err(TagError::Read)?),
+            Tag_also_compatible_with => {
+                let sub_tag = Tag::read(cursor, endian)?;
+                if sub_tag.is_uleb128() {
+                    let null = read_u8(cursor).map_err(TagError::Read)?;
+                    if null != 0 {
+                        return Err(TagError::ExpectedNull);
+                    }
+                }
+                Tag::AlsoCompatibleWith(Box::new(sub_tag))
+            }
             Tag_conformance => Tag::Conformance(read_string(cursor).map_err(TagError::Read)?),
             Tag_T2EE_use => Tag::T2EeUse(read_uleb128(cursor).map_err(TagError::Read)?),
             Tag_Virtualization_use => Tag::VirtualizationUse(read_uleb128(cursor).map_err(TagError::Read)?),
@@ -231,7 +257,7 @@ impl Tag {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug, Hash)]
 pub enum Scope {
     /// Applies to whole file
     File,
