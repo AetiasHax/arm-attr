@@ -228,13 +228,11 @@ pub struct PublicAttributes<'a> {
 
 #[derive(Default)]
 pub struct AttributeScope<'a> {
-    // CPU
+    // Target-related attributes
     pub cpu_raw_name: Option<&'a str>,
     pub cpu_name: Option<CpuName<'a>>,
     pub cpu_arch: Option<CpuArch>,
     pub cpu_arch_profile: Option<CpuArchProfile>,
-
-    // Arch
     pub arm_isa_use: Option<ArmIsaUse>,
     pub thumb_isa_use: Option<ThumbIsaUse>,
     pub fp_arch: Option<FpArch>,
@@ -251,7 +249,7 @@ pub struct AttributeScope<'a> {
     pub pac_ext: Option<PacExt>,
     pub bti_ext: Option<BtiExt>,
 
-    // ABI
+    // Procedure call-related attributes
     pub pcs_config: Option<PcsConfig>,
     pub abi_pcs_r9_use: Option<AbiPcsR9Use>,
     pub abi_pcs_rw_data: Option<AbiPcsRwData>,
@@ -272,33 +270,34 @@ pub struct AttributeScope<'a> {
     pub abi_wmmx_args: Option<AbiWmmxArgs>,
     pub frame_pointer_use: Option<FramePointerUse>,
     pub bti_use: Option<BtiUse>,
+
+    // Miscellaneous attributes
     pub pacret_use: Option<PacretUse>,
     pub abi_opt_goals: Option<AbiOptGoals>,
     pub abi_fp_opt_goals: Option<AbiFpOptGoals>,
-
-    // Compat
     pub compat: Option<Compat<'a>>,
     pub also_compat_with: Option<AlsoCompatWith<'a>>,
     pub conform: Option<Conform<'a>>,
-
-    // Misc
     pub no_defaults: bool,
 }
 
 impl<'a> AttributeScope<'a> {
-    pub fn display(&self, indent: usize, show_defaults: bool) -> AttributeScopeDisplay {
-        AttributeScopeDisplay {
-            scope: self,
-            indent,
-            show_defaults,
-        }
+    pub fn display(&self, options: AttributeDisplayOptions) -> AttributeScopeDisplay {
+        AttributeScopeDisplay { scope: self, options }
     }
 }
 
 pub struct AttributeScopeDisplay<'a> {
     scope: &'a AttributeScope<'a>,
-    indent: usize,
-    show_defaults: bool,
+    options: AttributeDisplayOptions,
+}
+
+pub struct AttributeDisplayOptions {
+    pub indent: usize,
+    pub show_defaults: bool,
+    pub show_target: bool,
+    pub show_pcs: bool,
+    pub show_misc: bool,
 }
 
 impl<'a> AttributeScopeDisplay<'a> {
@@ -309,15 +308,36 @@ impl<'a> AttributeScopeDisplay<'a> {
         value: &Option<T>,
     ) -> std::fmt::Result {
         if let Some(value) = value {
-            writeln!(f, "{}{} : {}", format_args!("{: >1$}", "", self.indent), field, value)
-        } else if self.show_defaults {
+            writeln!(f, "{}{} : {}", format_args!("{: >1$}", "", self.options.indent), field, value)
+        } else if self.options.show_defaults {
             let value = T::default();
             writeln!(
                 f,
                 "{}{} : [default] {}",
-                format_args!("{: >1$}", "", self.indent),
+                format_args!("{: >1$}", "", self.options.indent),
                 field,
                 value
+            )
+        } else {
+            Ok(())
+        }
+    }
+
+    fn display_quote(&self, f: &mut std::fmt::Formatter<'_>, field: &str, value: &Option<&str>) -> std::fmt::Result {
+        if let Some(value) = value {
+            writeln!(
+                f,
+                "{}{} : \"{}\"",
+                format_args!("{: >1$}", "", self.options.indent),
+                field,
+                value
+            )
+        } else if self.options.show_defaults {
+            writeln!(
+                f,
+                "{}{} : [default] \"\"",
+                format_args!("{: >1$}", "", self.options.indent),
+                field
             )
         } else {
             Ok(())
@@ -328,51 +348,57 @@ impl<'a> AttributeScopeDisplay<'a> {
 impl<'a> Display for AttributeScopeDisplay<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let scope = self.scope;
-        self.display_field(f, "CPU raw name .........", &scope.cpu_raw_name)?;
-        self.display_field(f, "CPU name .............", &scope.cpu_name)?;
-        self.display_field(f, "CPU arch .............", &scope.cpu_arch)?;
-        self.display_field(f, "CPU arch profile .....", &scope.cpu_arch_profile)?;
-        self.display_field(f, "ARM ISA use ..........", &scope.arm_isa_use)?;
-        self.display_field(f, "Thumb ISA use ........", &scope.thumb_isa_use)?;
-        self.display_field(f, "FP arch ..............", &scope.fp_arch)?;
-        self.display_field(f, "WMMX arch ............", &scope.wmmx_arch)?;
-        self.display_field(f, "Advanced SIMD arch ...", &scope.asimd_arch)?;
-        self.display_field(f, "MVE arch .............", &scope.mve_arch)?;
-        self.display_field(f, "FP HP extension ......", &scope.fp_hp_ext)?;
-        self.display_field(f, "Unaligned access .....", &scope.cpu_unaligned_access)?;
-        self.display_field(f, "T2EE use .............", &scope.t2ee_use)?;
-        self.display_field(f, "Virtualization use ...", &scope.virtual_use)?;
-        self.display_field(f, "MP extension use .....", &scope.mp_ext_use)?;
-        self.display_field(f, "DIV use ..............", &scope.div_use)?;
-        self.display_field(f, "DSP use ..............", &scope.dsp_ext)?;
-        self.display_field(f, "PAC extension ........", &scope.pac_ext)?;
-        self.display_field(f, "BTI extension ........", &scope.bti_ext)?;
-        self.display_field(f, "PCS config ...........", &scope.pcs_config)?;
-        self.display_field(f, "PCS R9 use ...........", &scope.abi_pcs_r9_use)?;
-        self.display_field(f, "PCS RW data ..........", &scope.abi_pcs_rw_data)?;
-        self.display_field(f, "PCS RO data ..........", &scope.abi_pcs_ro_data)?;
-        self.display_field(f, "PCS GOT use ..........", &scope.abi_pcs_got_use)?;
-        self.display_field(f, "PCS wchar_t ..........", &scope.abi_pcs_wchar_t)?;
-        self.display_field(f, "Enum size ............", &scope.abi_enum_size)?;
-        self.display_field(f, "Align needed .........", &scope.abi_align_needed)?;
-        self.display_field(f, "Align preserved ......", &scope.abi_align_preserved)?;
-        self.display_field(f, "FP rounding ..........", &scope.abi_fp_rounding)?;
-        self.display_field(f, "FP denormal ..........", &scope.abi_fp_denormal)?;
-        self.display_field(f, "FP exceptions ........", &scope.abi_fp_exceptions)?;
-        self.display_field(f, "FP user exceptions ...", &scope.abi_fp_user_exceptions)?;
-        self.display_field(f, "FP number format .....", &scope.abi_fp_number_model)?;
-        self.display_field(f, "FP 16-bit format .....", &scope.abi_fp_16bit_format)?;
-        self.display_field(f, "FP hardware use ......", &scope.abi_hardfp_use)?;
-        self.display_field(f, "VFP args .............", &scope.abi_vfp_args)?;
-        self.display_field(f, "WMMX args ............", &scope.abi_wmmx_args)?;
-        self.display_field(f, "Frame Pointer use ....", &scope.frame_pointer_use)?;
-        self.display_field(f, "BTI use ..............", &scope.bti_use)?;
-        self.display_field(f, "PACRET use ...........", &scope.pacret_use)?;
-        self.display_field(f, "Optimization goals ...", &scope.abi_opt_goals)?;
-        self.display_field(f, "FP optimization goals ", &scope.abi_fp_opt_goals)?;
-        self.display_field(f, "Compatibility ........", &scope.compat)?;
-        self.display_field(f, "Also compatible with .", &scope.also_compat_with)?;
-        self.display_field(f, "Conformance ..........", &scope.conform)?;
+        if self.options.show_target {
+            self.display_quote(f, "CPU raw name .........", &scope.cpu_raw_name)?;
+            self.display_field(f, "CPU name .............", &scope.cpu_name)?;
+            self.display_field(f, "CPU arch .............", &scope.cpu_arch)?;
+            self.display_field(f, "CPU arch profile .....", &scope.cpu_arch_profile)?;
+            self.display_field(f, "ARM ISA use ..........", &scope.arm_isa_use)?;
+            self.display_field(f, "Thumb ISA use ........", &scope.thumb_isa_use)?;
+            self.display_field(f, "FP arch ..............", &scope.fp_arch)?;
+            self.display_field(f, "WMMX arch ............", &scope.wmmx_arch)?;
+            self.display_field(f, "Advanced SIMD arch ...", &scope.asimd_arch)?;
+            self.display_field(f, "MVE arch .............", &scope.mve_arch)?;
+            self.display_field(f, "FP HP extension ......", &scope.fp_hp_ext)?;
+            self.display_field(f, "Unaligned access .....", &scope.cpu_unaligned_access)?;
+            self.display_field(f, "T2EE use .............", &scope.t2ee_use)?;
+            self.display_field(f, "Virtualization use ...", &scope.virtual_use)?;
+            self.display_field(f, "MP extension use .....", &scope.mp_ext_use)?;
+            self.display_field(f, "DIV use ..............", &scope.div_use)?;
+            self.display_field(f, "DSP use ..............", &scope.dsp_ext)?;
+            self.display_field(f, "PAC extension ........", &scope.pac_ext)?;
+            self.display_field(f, "BTI extension ........", &scope.bti_ext)?;
+        }
+        if self.options.show_pcs {
+            self.display_field(f, "PCS config ...........", &scope.pcs_config)?;
+            self.display_field(f, "PCS R9 use ...........", &scope.abi_pcs_r9_use)?;
+            self.display_field(f, "PCS RW data ..........", &scope.abi_pcs_rw_data)?;
+            self.display_field(f, "PCS RO data ..........", &scope.abi_pcs_ro_data)?;
+            self.display_field(f, "PCS GOT use ..........", &scope.abi_pcs_got_use)?;
+            self.display_field(f, "PCS wchar_t ..........", &scope.abi_pcs_wchar_t)?;
+            self.display_field(f, "Enum size ............", &scope.abi_enum_size)?;
+            self.display_field(f, "Align needed .........", &scope.abi_align_needed)?;
+            self.display_field(f, "Align preserved ......", &scope.abi_align_preserved)?;
+            self.display_field(f, "FP rounding ..........", &scope.abi_fp_rounding)?;
+            self.display_field(f, "FP denormal ..........", &scope.abi_fp_denormal)?;
+            self.display_field(f, "FP exceptions ........", &scope.abi_fp_exceptions)?;
+            self.display_field(f, "FP user exceptions ...", &scope.abi_fp_user_exceptions)?;
+            self.display_field(f, "FP number format .....", &scope.abi_fp_number_model)?;
+            self.display_field(f, "FP 16-bit format .....", &scope.abi_fp_16bit_format)?;
+            self.display_field(f, "FP hardware use ......", &scope.abi_hardfp_use)?;
+            self.display_field(f, "VFP args .............", &scope.abi_vfp_args)?;
+            self.display_field(f, "WMMX args ............", &scope.abi_wmmx_args)?;
+            self.display_field(f, "Frame Pointer use ....", &scope.frame_pointer_use)?;
+            self.display_field(f, "BTI use ..............", &scope.bti_use)?;
+        }
+        if self.options.show_misc {
+            self.display_field(f, "PACRET use ...........", &scope.pacret_use)?;
+            self.display_field(f, "Optimization goals ...", &scope.abi_opt_goals)?;
+            self.display_field(f, "FP optimization goals ", &scope.abi_fp_opt_goals)?;
+            self.display_field(f, "Compatibility ........", &scope.compat)?;
+            self.display_field(f, "Also compatible with .", &scope.also_compat_with)?;
+            self.display_field(f, "Conformance ..........", &scope.conform)?;
+        }
         Ok(())
     }
 }

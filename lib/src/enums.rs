@@ -202,7 +202,7 @@ impl<'a> Display for CpuName<'a> {
             Self::CortexA8 => write!(f, "Cortex-A8"),
             Self::CortexA9 => write!(f, "Cortex-A9"),
             Self::CortexA15 => write!(f, "Cortex-A16"),
-            Self::Other(name) => write!(f, "{name}"),
+            Self::Other(name) => write!(f, "\"{name}\""),
         }
     }
 }
@@ -397,7 +397,7 @@ impl From<u8> for CpuArchProfile {
 impl Display for CpuArchProfile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::NotApplicable => Ok(()),
+            Self::NotApplicable => write!(f, "N/A"),
             Self::Application => write!(f, "A"),
             Self::RealTime => write!(f, "R"),
             Self::Microcontroller => write!(f, "M"),
@@ -2296,9 +2296,9 @@ impl<'a> AlsoCompatWith<'a> {
 impl<'a> Display for AlsoCompatWith<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::None => Ok(()),
+            Self::None => write!(f, "Nothing"),
             Self::Arch(arch) => write!(f, "{}", arch),
-            Self::Unknown(tag) => write!(f, "<unknown: {:?}>", tag),
+            Self::Unknown(tag) => write!(f, "<reserved: {:?}>", tag),
         }
     }
 }
