@@ -44,9 +44,9 @@ fn main() -> Result<()> {
         .sections()
         .find(|s| s.kind() == SectionKind::Elf(SHT_ARM_ATTRIBUTES) && s.name() == Ok(".ARM.attributes"))
         .ok_or(anyhow!("No attributes section found"))?;
-    let attrs_data = arm_attrs.data()?;
+    let attrs_data = arm_attrs.uncompressed_data()?;
 
-    let build_attrs = BuildAttrs::new(attrs_data, convert_endian(file.endianness()))?;
+    let build_attrs = BuildAttrs::new(&attrs_data, convert_endian(file.endianness()))?;
     for section in build_attrs.subsections().map(|s| s.unwrap()) {
         println!("Vendor: {}", section.vendor_name());
         if !section.is_aeabi() {
