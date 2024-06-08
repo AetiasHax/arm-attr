@@ -72,7 +72,11 @@ impl<'a> Iterator for SubsectionIter<'a> {
         let name_size = vendor_name.len() + 1;
 
         let pos = self.cursor.position() as usize;
-        let data = &self.data[pos..pos + length as usize - name_size - 4];
+        let end = pos + length as usize - name_size - 4;
+        if end > self.data.len() {
+            return Some(Err(ReadError::OutOfBounds));
+        }
+        let data = &self.data[pos..end];
         if let Err(e) = self.cursor.seek(std::io::SeekFrom::Current(data.len() as i64)) {
             Some(Err(ReadError::Io(e)))
         } else {
@@ -122,35 +126,65 @@ impl<'a> Subsection<'a> {
     }
 
     pub fn into_public_attributes(self) -> Result<File<'a>, PublicAttrsError> {
+        let data_len = self.data.len();
         let mut tags = self.into_public_attr_iter()?.map(|a| a.map_err(PublicAttrsError::Tag));
 
         let first_tag = tags.next().unwrap_or(Err(PublicAttrsError::NoTags))?;
-        if !matches!(first_tag, Tag::File { size: _ }) {
+        if let (_, Tag::File { end_offset }) = first_tag {
+            if end_offset as usize != data_len {
+                return Err(PublicAttrsError::ScopeEndsBeforeParent);
+            }
+        } else {
             return Err(PublicAttrsError::NoFileTag);
         }
 
         let mut file = File::default();
         let mut attrs = &mut file.attributes;
         let mut curr_section = None;
+        let mut curr_symbol = None;
 
         for tag in tags {
-            let tag = tag?;
-            match tag {
-                Tag::File { size: _ } => {
-                    attrs = &mut file.attributes;
+            let (offset, tag) = tag?;
+
+            if let Some((end_offset, _)) = curr_symbol {
+                if offset >= end_offset {
+                    curr_symbol = None;
+                    attrs = if let Some((_, sections)) = curr_section {
+                        &mut file.sections.entry(sections).or_default().attributes
+                    } else {
+                        &mut file.attributes
+                    };
+                }
+            }
+
+            if let Some((end_offset, _)) = curr_section {
+                if offset >= end_offset {
                     curr_section = None;
+                    attrs = &mut file.attributes;
                 }
-                Tag::Section { size: _, sections } => {
-                    let section = file.sections.entry(sections).or_default();
-                    attrs = &mut section.attributes;
-                    curr_section = Some(sections);
+            }
+
+            match tag {
+                Tag::File { end_offset: _ } => return Err(PublicAttrsError::DuplicateFileTag),
+                Tag::Section { end_offset, sections } => {
+                    if curr_section.is_none() && curr_symbol.is_none() {
+                        let section = file.sections.entry(sections).or_default();
+                        attrs = &mut section.attributes;
+                        curr_section = Some((end_offset, sections));
+                    } else {
+                        return Err(PublicAttrsError::NotFileScope);
+                    }
                 }
-                Tag::Symbol { size: _, symbols } => {
-                    if let Some(sections) = &curr_section {
+                Tag::Symbol { end_offset, symbols } => {
+                    if let Some((section_end, sections)) = &curr_section {
+                        if end_offset > *section_end {
+                            return Err(PublicAttrsError::ScopeEndsBeforeParent);
+                        }
                         let symbol = file.sections.entry(sections).or_default().symbols.entry(symbols).or_default();
                         attrs = &mut symbol.attributes;
+                        curr_symbol = Some((end_offset, symbols));
                     } else {
-                        return Err(PublicAttrsError::NoSectionScope);
+                        return Err(PublicAttrsError::NotSectionScope);
                     }
                 }
                 Tag::CpuRawName(x) => attrs.cpu_raw_name = Some(x),
@@ -227,11 +261,12 @@ pub struct PublicAttrIter<'a> {
 }
 
 impl<'a> Iterator for PublicAttrIter<'a> {
-    type Item = Result<Tag<'a>, TagError>;
+    type Item = Result<(u32, Tag<'a>), TagError>;
 
     fn next(&mut self) -> Option<Self::Item> {
+        let offset = self.cursor.position() as u32;
         match Tag::read(&mut self.cursor, self.endian) {
-            Ok(tag) => Some(Ok(tag)),
+            Ok(tag) => Some(Ok((offset, tag))),
             Err(TagError::Read(ReadError::Eof)) => None,
             Err(e) => Some(Err(e)),
         }

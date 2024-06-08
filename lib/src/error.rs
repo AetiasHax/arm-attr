@@ -18,6 +18,8 @@ pub enum ReadError {
     Utf8(Utf8Error),
     #[error("no more data (EOF reached)")]
     Eof,
+    #[error("index out of bounds")]
+    OutOfBounds,
 }
 
 #[derive(Error, Debug)]
@@ -30,8 +32,14 @@ pub enum PublicAttrsError {
     NoTags,
     #[error("expected first tag to be a file tag")]
     NoFileTag,
+    #[error("duplicate file tag")]
+    DuplicateFileTag,
+    #[error("expected to be in file scope")]
+    NotFileScope,
     #[error("expected to be in section scope")]
-    NoSectionScope,
+    NotSectionScope,
+    #[error("enclosed scope ends before parent scope")]
+    ScopeEndsBeforeParent,
 }
 
 #[derive(Error, Debug)]
@@ -44,4 +52,6 @@ pub enum TagError {
     InvalidScopeTag,
     #[error("expected null")]
     ExpectedNull,
+    #[error("nested scope tag")]
+    NestedScopeTag,
 }

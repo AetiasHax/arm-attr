@@ -12,11 +12,11 @@ use crate::{
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
 pub enum Tag<'a> {
     /// Tag_File
-    File { size: u32 },
+    File { end_offset: u32 },
     /// Tag_Section
-    Section { size: u32, sections: &'a [u8] },
+    Section { end_offset: u32, sections: &'a [u8] },
     /// Tag_Symbol
-    Symbol { size: u32, symbols: &'a [u8] },
+    Symbol { end_offset: u32, symbols: &'a [u8] },
     /// Tag_CPU_raw_name
     CpuRawName(&'a str),
     /// Tag_CPU_name
@@ -115,9 +115,15 @@ impl<'a> Tag<'a> {
     pub fn is_uleb128(&self) -> bool {
         !matches!(
             self,
-            Tag::File { size: _ }
-                | Tag::Section { size: _, sections: _ }
-                | Tag::Symbol { size: _, symbols: _ }
+            Tag::File { end_offset: _ }
+                | Tag::Section {
+                    end_offset: _,
+                    sections: _
+                }
+                | Tag::Symbol {
+                    end_offset: _,
+                    symbols: _
+                }
                 | Tag::CpuRawName(_)
                 | Tag::CpuName(_)
                 | Tag::Compat(_)
@@ -126,11 +132,32 @@ impl<'a> Tag<'a> {
         )
     }
 
+    pub fn is_scope(&self) -> bool {
+        matches!(
+            self,
+            Tag::File { end_offset: _ }
+                | Tag::Section {
+                    end_offset: _,
+                    sections: _
+                }
+                | Tag::Symbol {
+                    end_offset: _,
+                    symbols: _
+                }
+        )
+    }
+
     pub fn raw_tag(&self) -> u8 {
         match self {
-            Tag::File { size: _ } => Tag_File,
-            Tag::Section { size: _, sections: _ } => Tag_Section,
-            Tag::Symbol { size: _, symbols: _ } => Tag_Symbol,
+            Tag::File { end_offset: _ } => Tag_File,
+            Tag::Section {
+                end_offset: _,
+                sections: _,
+            } => Tag_Section,
+            Tag::Symbol {
+                end_offset: _,
+                symbols: _,
+            } => Tag_Symbol,
             Tag::CpuRawName(_) => Tag_CPU_raw_name,
             Tag::CpuName(_) => Tag_CPU_name,
             Tag::CpuArch(_) => Tag_CPU_arch,
@@ -181,17 +208,18 @@ impl<'a> Tag<'a> {
     }
 
     pub(crate) fn read(cursor: &mut Cursor<&'a [u8]>, endian: Endian) -> Result<Self, TagError> {
+        let pos = cursor.position() as u32;
         let tag = read_uleb128(cursor).map_err(TagError::Read)?;
         let tag = match tag {
             Tag_File => Tag::File {
-                size: read_u32(cursor, endian).map_err(TagError::Read)?,
+                end_offset: pos + read_u32(cursor, endian).map_err(TagError::Read)?,
             },
             Tag_Section => Tag::Section {
-                size: read_u32(cursor, endian).map_err(TagError::Read)?,
+                end_offset: pos + read_u32(cursor, endian).map_err(TagError::Read)?,
                 sections: read_uleb128_list(cursor).map_err(TagError::Read)?,
             },
             Tag_Symbol => Tag::Symbol {
-                size: read_u32(cursor, endian).map_err(TagError::Read)?,
+                end_offset: pos + read_u32(cursor, endian).map_err(TagError::Read)?,
                 symbols: read_uleb128_list(cursor).map_err(TagError::Read)?,
             },
             Tag_CPU_raw_name => Tag::CpuRawName(read_string(cursor).map_err(TagError::Read)?),
@@ -232,10 +260,17 @@ impl<'a> Tag<'a> {
             Tag_ABI_FP_optimization_goals => {
                 Tag::AbiFpOptGoals(AbiFpOptGoals::from(read_uleb128(cursor).map_err(TagError::Read)?))
             }
-            Tag_compatibility => Tag::Compat(Compat::new(
-                read_uleb128(cursor).map_err(TagError::Read)?,
-                read_string(cursor).map_err(TagError::Read)?,
-            )),
+            Tag_compatibility => {
+                let flag = read_uleb128(cursor).map_err(TagError::Read)?;
+                Tag::Compat(Compat::new(
+                    flag,
+                    if flag != 0 {
+                        read_string(cursor).map_err(TagError::Read)?
+                    } else {
+                        ""
+                    },
+                ))
+            }
             Tag_CPU_unaligned_access => {
                 Tag::CpuUnalignedAccess(CpuUnalignedAccess::from(read_uleb128(cursor).map_err(TagError::Read)?))
             }
@@ -263,6 +298,9 @@ impl<'a> Tag<'a> {
                     if null != 0 {
                         return Err(TagError::ExpectedNull);
                     }
+                }
+                if sub_tag.is_scope() {
+                    return Err(TagError::NestedScopeTag);
                 }
                 Tag::AlsoCompatWith(AlsoCompatWith::new(sub_tag))
             }
