@@ -153,61 +153,65 @@ impl<'a> Subsection<'a> {
                         return Err(PublicAttrsError::NoSectionScope);
                     }
                 }
-                Tag::CpuRawName(name) => attrs.cpu_raw_name = Some(name),
-                Tag::CpuName(name) => attrs.cpu_name = Some(name),
-                Tag::CpuArch(value) => attrs.cpu_arch = Some(value),
-                Tag::CpuArchProfile(value) => attrs.cpu_arch_profile = Some(value),
-                Tag::ArmIsaUse(value) => attrs.arm_isa_use = Some(value),
-                Tag::ThumbIsaUse(value) => attrs.thumb_isa_use = Some(value),
-                Tag::FpArch(value) => attrs.fp_arch = Some(value),
-                Tag::WmmxArch(value) => attrs.wmmx_arch = Some(value),
-                Tag::AsimdArch(value) => attrs.asimd_arch = Some(value),
-                Tag::PcsConfig(value) => attrs.pcs_config = Some(value),
-                Tag::AbiPcsR9Use(value) => attrs.abi_pcs_r9_use = Some(value),
-                Tag::AbiPcsRwData(value) => attrs.abi_pcs_rw_data = Some(value),
-                Tag::AbiPcsRoData(value) => attrs.abi_pcs_ro_data = Some(value),
-                Tag::AbiPcsGotUse(value) => attrs.abi_pcs_got_use = Some(value),
-                Tag::AbiPcsWcharT(value) => attrs.abi_pcs_wchar_t = Some(value),
-                Tag::AbiFpRounding(value) => attrs.abi_fp_rounding = Some(value),
-                Tag::AbiFpDenormal(value) => attrs.abi_fp_denormal = Some(value),
-                Tag::AbiFpExceptions(value) => attrs.abi_fp_exceptions = Some(value),
-                Tag::AbiFpUserExceptions(value) => attrs.abi_fp_user_exceptions = Some(value),
-                Tag::AbiFpNumberModel(value) => attrs.abi_fp_number_model = Some(value),
-                Tag::AbiAlignNeeded(value) => attrs.abi_align_needed = Some(value),
-                Tag::AbiAlignPreserved(value) => attrs.abi_align_preserved = Some(value),
-                Tag::AbiEnumSize(value) => attrs.abi_enum_size = Some(value),
-                Tag::AbiHardFpUse(value) => attrs.abi_hardfp_use = Some(value),
-                Tag::AbiVfpArgs(value) => attrs.abi_vfp_args = Some(value),
-                Tag::AbiWmmxArgs(value) => attrs.abi_wmmx_args = Some(value),
-                Tag::AbiOptGoals(value) => attrs.abi_opt_goals = Some(value),
-                Tag::AbiFpOptGoals(value) => attrs.abi_fp_opt_goals = Some(value),
-                Tag::Compat(value) => attrs.compat = Some(value),
-                Tag::CpuUnalignedAccess(value) => attrs.cpu_unaligned_access = Some(value),
-                Tag::FpHpExt(value) => attrs.fp_hp_ext = Some(value),
-                Tag::AbiFp16BitFormat(value) => attrs.abi_fp_16bit_format = Some(value),
-                Tag::MpExtUse(value) => attrs.mp_ext_use = Some(value),
-                Tag::DivUse(value) => attrs.div_use = Some(value),
-                Tag::DspExt(value) => attrs.dsp_ext = Some(value),
-                Tag::MveArch(value) => attrs.mve_arch = Some(value),
-                Tag::PacExt(value) => attrs.pac_ext = Some(value),
-                Tag::BtiExt(value) => attrs.bti_ext = Some(value),
+                Tag::CpuRawName(x) => attrs.cpu_raw_name = Some(x),
+                Tag::CpuName(x) => attrs.cpu_name = Some(x),
+                Tag::CpuArch(x) => attrs.cpu_arch = Some(x),
+                Tag::CpuArchProfile(x) => attrs.cpu_arch_profile = Some(x),
+                Tag::ArmIsaUse(x) => attrs.arm_isa_use = Some(x),
+                Tag::ThumbIsaUse(x) => attrs.thumb_isa_use = Some(x),
+                Tag::FpArch(x) => attrs.fp_arch = Some(x),
+                Tag::WmmxArch(x) => attrs.wmmx_arch = Some(x),
+                Tag::AsimdArch(x) => attrs.asimd_arch = Some(x),
+                Tag::PcsConfig(x) => attrs.pcs_config = Some(x),
+                Tag::AbiPcsR9Use(x) => attrs.abi_pcs_r9_use = Some(x),
+                Tag::AbiPcsRwData(x) => attrs.abi_pcs_rw_data = Some(x),
+                Tag::AbiPcsRoData(x) => attrs.abi_pcs_ro_data = Some(x),
+                Tag::AbiPcsGotUse(x) => attrs.abi_pcs_got_use = Some(x),
+                Tag::AbiPcsWcharT(x) => attrs.abi_pcs_wchar_t = Some(x),
+                Tag::AbiFpRounding(x) => attrs.abi_fp_rounding = Some(x),
+                Tag::AbiFpDenormal(x) => attrs.abi_fp_denormal = Some(x),
+                Tag::AbiFpExceptions(x) => attrs.abi_fp_exceptions = Some(x),
+                Tag::AbiFpUserExceptions(x) => attrs.abi_fp_user_exceptions = Some(x),
+                Tag::AbiFpNumberModel(x) => attrs.abi_fp_number_model = Some(x),
+                Tag::AbiAlignNeeded(x) => attrs.abi_align_needed = Some(x),
+                Tag::AbiAlignPreserved(x) => attrs.abi_align_preserved = Some(x),
+                Tag::AbiEnumSize(x) => attrs.abi_enum_size = Some(x),
+                Tag::AbiHardFpUse(x) => attrs.abi_hardfp_use = Some(x),
+                Tag::AbiVfpArgs(x) => attrs.abi_vfp_args = Some(x),
+                Tag::AbiWmmxArgs(x) => attrs.abi_wmmx_args = Some(x),
+                Tag::AbiOptGoals(x) => attrs.abi_opt_goals = Some(x),
+                Tag::AbiFpOptGoals(x) => attrs.abi_fp_opt_goals = Some(x),
+                Tag::Compat(x) => attrs.compat = Some(x),
+                Tag::CpuUnalignedAccess(x) => attrs.cpu_unaligned_access = Some(x),
+                Tag::FpHpExt(x) => attrs.fp_hp_ext = Some(x),
+                Tag::AbiFp16BitFormat(x) => attrs.abi_fp_16bit_format = Some(x),
+                Tag::MpExtUse(x) => attrs.mp_ext_use = Some(x),
+                Tag::DivUse(x) => attrs.div_use = Some(x),
+                Tag::DspExt(x) => attrs.dsp_ext = Some(x),
+                Tag::MveArch(x) => attrs.mve_arch = Some(x),
+                Tag::PacExt(x) => attrs.pac_ext = Some(x),
+                Tag::BtiExt(x) => attrs.bti_ext = Some(x),
+                Tag::AlsoCompatWith(x) => attrs.also_compat_with = Some(x),
+                Tag::Conform(x) => attrs.conform = Some(x),
+                Tag::T2EeUse(x) => attrs.t2ee_use = Some(x),
+                Tag::VirtualUse(x) => attrs.virtual_use = Some(x),
+                Tag::FramePointerUse(x) => attrs.frame_pointer_use = Some(x),
+                Tag::BtiUse(x) => attrs.bti_use = Some(x),
+                Tag::PacretUse(x) => attrs.pacret_use = Some(x),
                 Tag::NoDefaults => attrs.no_defaults = true,
-                Tag::AlsoCompatWith(tag) => attrs.also_compat_with = Some(tag),
-                Tag::Conform(version) => attrs.conform = Some(version),
-                Tag::T2EeUse(value) => attrs.t2ee_use = Some(value),
-                Tag::VirtualUse(value) => attrs.virtual_use = Some(value),
-                Tag::FramePointerUse(value) => attrs.frame_pointer_use = Some(value),
-                Tag::BtiUse(value) => attrs.bti_use = Some(value),
-                Tag::PacretUse(value) => attrs.pacret_use = Some(value),
             }
         }
 
         if !file.attributes.no_defaults {
             for section in file.sections.values_mut() {
-                section.attributes.inherit(&file.attributes);
+                if section.attributes.empty() {
+                    section.attributes.inherit(&file.attributes);
+                }
                 if !section.attributes.no_defaults {
                     for symbol in section.symbols.values_mut() {
-                        symbol.attributes.inherit(&section.attributes);
+                        if symbol.attributes.empty() {
+                            symbol.attributes.inherit(&section.attributes);
+                        }
                     }
                 }
             }
@@ -309,6 +313,54 @@ pub struct Attributes<'a> {
 }
 
 impl<'a> Attributes<'a> {
+    pub fn empty(&self) -> bool {
+        self.cpu_raw_name.is_some()
+            || self.cpu_name.is_some()
+            || self.cpu_arch.is_some()
+            || self.cpu_arch_profile.is_some()
+            || self.arm_isa_use.is_some()
+            || self.thumb_isa_use.is_some()
+            || self.fp_arch.is_some()
+            || self.wmmx_arch.is_some()
+            || self.asimd_arch.is_some()
+            || self.mve_arch.is_some()
+            || self.fp_hp_ext.is_some()
+            || self.cpu_unaligned_access.is_some()
+            || self.t2ee_use.is_some()
+            || self.virtual_use.is_some()
+            || self.mp_ext_use.is_some()
+            || self.div_use.is_some()
+            || self.dsp_ext.is_some()
+            || self.pac_ext.is_some()
+            || self.bti_ext.is_some()
+            || self.pcs_config.is_some()
+            || self.abi_pcs_r9_use.is_some()
+            || self.abi_pcs_rw_data.is_some()
+            || self.abi_pcs_ro_data.is_some()
+            || self.abi_pcs_got_use.is_some()
+            || self.abi_pcs_wchar_t.is_some()
+            || self.abi_enum_size.is_some()
+            || self.abi_align_needed.is_some()
+            || self.abi_align_preserved.is_some()
+            || self.abi_fp_rounding.is_some()
+            || self.abi_fp_denormal.is_some()
+            || self.abi_fp_exceptions.is_some()
+            || self.abi_fp_user_exceptions.is_some()
+            || self.abi_fp_number_model.is_some()
+            || self.abi_fp_16bit_format.is_some()
+            || self.abi_hardfp_use.is_some()
+            || self.abi_vfp_args.is_some()
+            || self.abi_wmmx_args.is_some()
+            || self.frame_pointer_use.is_some()
+            || self.bti_use.is_some()
+            || self.pacret_use.is_some()
+            || self.abi_opt_goals.is_some()
+            || self.abi_fp_opt_goals.is_some()
+            || self.compat.is_some()
+            || self.also_compat_with.is_some()
+            || self.conform.is_some()
+    }
+
     fn inherit(&mut self, from: &Attributes<'a>) {
         macro_rules! inherit {
             ($to:ident, $from:ident, $tag:ident) => {
