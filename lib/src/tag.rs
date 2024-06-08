@@ -3,6 +3,7 @@
 use std::io::Cursor;
 
 use crate::{
+    enums::*,
     error::TagError,
     globals::*,
     read::{read_string, read_u32, read_u8, read_uleb128, read_uleb128_list, Endian},
@@ -19,95 +20,95 @@ pub enum Tag<'a> {
     /// Tag_CPU_raw_name
     CpuRawName(&'a str),
     /// Tag_CPU_name
-    CpuName(&'a str),
+    CpuName(CpuName<'a>),
     /// Tag_CPU_arch
-    CpuArch(u8),
+    CpuArch(CpuArch),
     /// Tag_CPU_arch_profile
-    CpuArchProfile(u8),
+    CpuArchProfile(CpuArchProfile),
     /// Tag_ARM_ISA_use
-    ArmIsaUse(u8),
+    ArmIsaUse(ArmIsaUse),
     /// Tag_THUMB_ISA_use
-    ThumbIsaUse(u8),
+    ThumbIsaUse(ThumbIsaUse),
     /// Tag_FP_arch
-    FpArch(u8),
+    FpArch(FpArch),
     /// Tag_WMMX_arch
-    WmmxArch(u8),
+    WmmxArch(WmmxArch),
     /// Tag_Advanced_SIMD_arch
-    AsimdArch(u8),
+    AsimdArch(AsimdArch),
     /// Tag_PCS_config
-    PcsConfig(u8),
+    PcsConfig(PcsConfig),
     /// Tag_ABI_PCS_R9_use
-    AbiPcsR9Use(u8),
+    AbiPcsR9Use(AbiPcsR9Use),
     /// Tag_ABI_PCS_RW_data
-    AbiPcsRwData(u8),
+    AbiPcsRwData(AbiPcsRwData),
     /// Tag_ABI_PCS_RO_data
-    AbiPcsRoData(u8),
+    AbiPcsRoData(AbiPcsRoData),
     /// Tag_ABI_PCS_GOT_use
-    AbiPcsGotUse(u8),
+    AbiPcsGotUse(AbiPcsGotUse),
     /// Tag_ABI_PCS_wchar_t
-    AbiPcsWcharT(u8),
+    AbiPcsWcharT(AbiPcsWcharT),
     /// Tag_ABI_FP_rounding
-    AbiFpRounding(u8),
+    AbiFpRounding(AbiFpRounding),
     /// Tag_ABI_FP_denormal
-    AbiFpDenormal(u8),
+    AbiFpDenormal(AbiFpDenormal),
     /// Tag_ABI_FP_exceptions
-    AbiFpExceptions(u8),
+    AbiFpExceptions(AbiFpExceptions),
     /// Tag_ABI_FP_user_exceptions
-    AbiFpUserExceptions(u8),
+    AbiFpUserExceptions(AbiFpUserExceptions),
     /// Tag_ABI_FP_number_model
-    AbiFpNumberModel(u8),
+    AbiFpNumberModel(AbiFpNumberModel),
     /// Tag_ABI_align_needed
-    AbiAlignNeeded(u8),
+    AbiAlignNeeded(AbiAlignNeeded),
     /// Tag_ABI_align_preserved
-    AbiAlignPreserved(u8),
+    AbiAlignPreserved(AbiAlignPreserved),
     /// Tag_ABI_enum_size
-    AbiEnumSize(u8),
+    AbiEnumSize(AbiEnumSize),
     /// Tag_ABI_HardFP_use
-    AbiHardFpUse(u8),
+    AbiHardFpUse(AbiHardFpUse),
     /// Tag_ABI_VFP_args
-    AbiVfpArgs(u8),
+    AbiVfpArgs(AbiVfpArgs),
     /// Tag_ABI_WMMX_args
-    AbiWmmxArgs(u8),
+    AbiWmmxArgs(AbiWmmxArgs),
     /// Tag_ABI_optimization_goals
-    AbiOptGoals(u8),
+    AbiOptGoals(AbiOptGoals),
     /// Tag_ABI_FP_optimization_goals
-    AbiFpOptGoals(u8),
+    AbiFpOptGoals(AbiFpOptGoals),
     /// Tag_compatibility
-    Compat { flag: u8, vendor_name: &'a str },
+    Compat(Compat<'a>),
     /// Tag_CPU_unaligned_access
-    CpuUnalignedAccess(u8),
+    CpuUnalignedAccess(CpuUnalignedAccess),
     /// Tag_FP_HP_extension
-    FpHpExt(u8),
+    FpHpExt(FpHpExt),
     /// Tag_ABI_FP_16bit_format
-    AbiFp16BitFormat(u8),
+    AbiFp16BitFormat(AbiFp16BitFormat),
     /// Tag_MPextension_use
-    MpExtUse(u8),
+    MpExtUse(MpExtUse),
     /// Tag_DIV_use
-    DivUse(u8),
+    DivUse(DivUse),
     /// Tag_DSP_extension
-    DspExt(u8),
+    DspExt(DspExt),
     /// Tag_MVE_arch
-    MveArch(u8),
+    MveArch(MveArch),
     /// Tag_PAC_extension
-    PacExt(u8),
+    PacExt(PacExt),
     /// Tag_BTI_extension
-    BtiExt(u8),
+    BtiExt(BtiExt),
     /// Tag_nodefaults
     NoDefaults,
     /// Tag_also_compatible_with
-    AlsoCompatWith(Box<Tag<'a>>),
+    AlsoCompatWith(AlsoCompatWith<'a>),
     /// Tag_conformance
     Conform(&'a str),
     /// Tag_T2EE_use
-    T2EeUse(u8),
+    T2EeUse(T2EeUse),
     /// Tag_Virtualization_use
-    VirtualUse(u8),
+    VirtualUse(VirtualUse),
     /// Tag_FramePointer_use
-    FramePointerUse(u8),
+    FramePointerUse(FramePointerUse),
     /// Tag_BTI_use
-    BtiUse(u8),
+    BtiUse(BtiUse),
     /// Tag_PACRET_use
-    PacretUse(u8),
+    PacretUse(PacretUse),
 }
 
 impl<'a> Tag<'a> {
@@ -119,7 +120,7 @@ impl<'a> Tag<'a> {
                 | Tag::Symbol { size: _, symbols: _ }
                 | Tag::CpuRawName(_)
                 | Tag::CpuName(_)
-                | Tag::Compat { flag: _, vendor_name: _ }
+                | Tag::Compat(_)
                 | Tag::AlsoCompatWith(_)
                 | Tag::Conform(_)
         )
@@ -158,7 +159,7 @@ impl<'a> Tag<'a> {
             Tag::AbiWmmxArgs(_) => Tag_ABI_WMMX_args,
             Tag::AbiOptGoals(_) => Tag_ABI_optimization_goals,
             Tag::AbiFpOptGoals(_) => Tag_ABI_FP_optimization_goals,
-            Tag::Compat { flag: _, vendor_name: _ } => Tag_compatibility,
+            Tag::Compat(_) => Tag_compatibility,
             Tag::CpuUnalignedAccess(_) => Tag_CPU_unaligned_access,
             Tag::FpHpExt(_) => Tag_FP_HP_extension,
             Tag::AbiFp16BitFormat(_) => Tag_ABI_FP_16bit_format,
@@ -194,46 +195,60 @@ impl<'a> Tag<'a> {
                 symbols: read_uleb128_list(cursor).map_err(TagError::Read)?,
             },
             Tag_CPU_raw_name => Tag::CpuRawName(read_string(cursor).map_err(TagError::Read)?),
-            Tag_CPU_name => Tag::CpuName(read_string(cursor).map_err(TagError::Read)?),
-            Tag_CPU_arch => Tag::CpuArch(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_CPU_arch_profile => Tag::CpuArchProfile(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ARM_ISA_use => Tag::ArmIsaUse(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_THUMB_ISA_use => Tag::ThumbIsaUse(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_FP_arch => Tag::FpArch(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_WMMX_arch => Tag::WmmxArch(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_Advanced_SIMD_arch => Tag::AsimdArch(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_PCS_config => Tag::PcsConfig(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ABI_PCS_R9_use => Tag::AbiPcsR9Use(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ABI_PCS_RW_data => Tag::AbiPcsRwData(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ABI_PCS_RO_data => Tag::AbiPcsRoData(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ABI_PCS_GOT_use => Tag::AbiPcsGotUse(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ABI_PCS_wchar_t => Tag::AbiPcsWcharT(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ABI_FP_rounding => Tag::AbiFpRounding(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ABI_FP_denormal => Tag::AbiFpDenormal(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ABI_FP_exceptions => Tag::AbiFpExceptions(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ABI_FP_user_exceptions => Tag::AbiFpUserExceptions(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ABI_FP_number_model => Tag::AbiFpNumberModel(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ABI_align_needed => Tag::AbiAlignNeeded(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ABI_align_preserved => Tag::AbiAlignPreserved(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ABI_enum_size => Tag::AbiEnumSize(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ABI_HardFP_use => Tag::AbiHardFpUse(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ABI_VFP_args => Tag::AbiVfpArgs(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ABI_WMMX_args => Tag::AbiWmmxArgs(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ABI_optimization_goals => Tag::AbiOptGoals(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ABI_FP_optimization_goals => Tag::AbiFpOptGoals(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_compatibility => Tag::Compat {
-                flag: read_uleb128(cursor).map_err(TagError::Read)?,
-                vendor_name: read_string(cursor).map_err(TagError::Read)?,
-            },
-            Tag_CPU_unaligned_access => Tag::CpuUnalignedAccess(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_FP_HP_extension => Tag::FpHpExt(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_ABI_FP_16bit_format => Tag::AbiFp16BitFormat(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_MPextension_use => Tag::MpExtUse(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_DIV_use => Tag::DivUse(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_DSP_extension => Tag::DspExt(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_MVE_arch => Tag::MveArch(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_PAC_extension => Tag::PacExt(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_BTI_extension => Tag::BtiExt(read_uleb128(cursor).map_err(TagError::Read)?),
+            Tag_CPU_name => Tag::CpuName(CpuName::from(read_string(cursor).map_err(TagError::Read)?)),
+            Tag_CPU_arch => Tag::CpuArch(CpuArch::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_CPU_arch_profile => Tag::CpuArchProfile(CpuArchProfile::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_ARM_ISA_use => Tag::ArmIsaUse(ArmIsaUse::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_THUMB_ISA_use => Tag::ThumbIsaUse(ThumbIsaUse::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_FP_arch => Tag::FpArch(FpArch::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_WMMX_arch => Tag::WmmxArch(WmmxArch::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_Advanced_SIMD_arch => Tag::AsimdArch(AsimdArch::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_PCS_config => Tag::PcsConfig(PcsConfig::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_ABI_PCS_R9_use => Tag::AbiPcsR9Use(AbiPcsR9Use::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_ABI_PCS_RW_data => Tag::AbiPcsRwData(AbiPcsRwData::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_ABI_PCS_RO_data => Tag::AbiPcsRoData(AbiPcsRoData::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_ABI_PCS_GOT_use => Tag::AbiPcsGotUse(AbiPcsGotUse::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_ABI_PCS_wchar_t => Tag::AbiPcsWcharT(AbiPcsWcharT::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_ABI_FP_rounding => Tag::AbiFpRounding(AbiFpRounding::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_ABI_FP_denormal => Tag::AbiFpDenormal(AbiFpDenormal::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_ABI_FP_exceptions => {
+                Tag::AbiFpExceptions(AbiFpExceptions::from(read_uleb128(cursor).map_err(TagError::Read)?))
+            }
+            Tag_ABI_FP_user_exceptions => {
+                Tag::AbiFpUserExceptions(AbiFpUserExceptions::from(read_uleb128(cursor).map_err(TagError::Read)?))
+            }
+            Tag_ABI_FP_number_model => {
+                Tag::AbiFpNumberModel(AbiFpNumberModel::from(read_uleb128(cursor).map_err(TagError::Read)?))
+            }
+            Tag_ABI_align_needed => Tag::AbiAlignNeeded(AbiAlignNeeded::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_ABI_align_preserved => {
+                Tag::AbiAlignPreserved(AbiAlignPreserved::from(read_uleb128(cursor).map_err(TagError::Read)?))
+            }
+            Tag_ABI_enum_size => Tag::AbiEnumSize(AbiEnumSize::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_ABI_HardFP_use => Tag::AbiHardFpUse(AbiHardFpUse::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_ABI_VFP_args => Tag::AbiVfpArgs(AbiVfpArgs::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_ABI_WMMX_args => Tag::AbiWmmxArgs(AbiWmmxArgs::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_ABI_optimization_goals => Tag::AbiOptGoals(AbiOptGoals::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_ABI_FP_optimization_goals => {
+                Tag::AbiFpOptGoals(AbiFpOptGoals::from(read_uleb128(cursor).map_err(TagError::Read)?))
+            }
+            Tag_compatibility => Tag::Compat(Compat::new(
+                read_uleb128(cursor).map_err(TagError::Read)?,
+                read_string(cursor).map_err(TagError::Read)?,
+            )),
+            Tag_CPU_unaligned_access => {
+                Tag::CpuUnalignedAccess(CpuUnalignedAccess::from(read_uleb128(cursor).map_err(TagError::Read)?))
+            }
+            Tag_FP_HP_extension => Tag::FpHpExt(FpHpExt::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_ABI_FP_16bit_format => {
+                Tag::AbiFp16BitFormat(AbiFp16BitFormat::from(read_uleb128(cursor).map_err(TagError::Read)?))
+            }
+            Tag_MPextension_use => Tag::MpExtUse(MpExtUse::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_DIV_use => Tag::DivUse(DivUse::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_DSP_extension => Tag::DspExt(DspExt::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_MVE_arch => Tag::MveArch(MveArch::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_PAC_extension => Tag::PacExt(PacExt::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_BTI_extension => Tag::BtiExt(BtiExt::from(read_uleb128(cursor).map_err(TagError::Read)?)),
             Tag_nodefaults => {
                 let ignored = read_u8(cursor).map_err(TagError::Read)?;
                 if ignored != 0 {
@@ -249,14 +264,14 @@ impl<'a> Tag<'a> {
                         return Err(TagError::ExpectedNull);
                     }
                 }
-                Tag::AlsoCompatWith(Box::new(sub_tag))
+                Tag::AlsoCompatWith(AlsoCompatWith::new(sub_tag))
             }
             Tag_conformance => Tag::Conform(read_string(cursor).map_err(TagError::Read)?),
-            Tag_T2EE_use => Tag::T2EeUse(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_Virtualization_use => Tag::VirtualUse(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_FramePointer_use => Tag::FramePointerUse(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_BTI_use => Tag::BtiUse(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_PACRET_use => Tag::PacretUse(read_uleb128(cursor).map_err(TagError::Read)?),
+            Tag_T2EE_use => Tag::T2EeUse(T2EeUse::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_Virtualization_use => Tag::VirtualUse(VirtualUse::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_FramePointer_use => Tag::FramePointerUse(FramePointerUse::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_BTI_use => Tag::BtiUse(BtiUse::from(read_uleb128(cursor).map_err(TagError::Read)?)),
+            Tag_PACRET_use => Tag::PacretUse(PacretUse::from(read_uleb128(cursor).map_err(TagError::Read)?)),
             _ => return Err(TagError::IncompatibleTagValue(tag)),
         };
         Ok(tag)

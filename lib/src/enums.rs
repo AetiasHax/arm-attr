@@ -2281,14 +2281,14 @@ pub enum AlsoCompatWith<'a> {
     #[default]
     None,
     Arch(CpuArch),
-    Reserved(Tag<'a>),
+    Reserved(Box<Tag<'a>>),
 }
 
 impl<'a> AlsoCompatWith<'a> {
     pub fn new(tag: Tag<'a>) -> Self {
         match tag {
-            Tag::CpuArch(arch) => Self::Arch(CpuArch::from(arch)),
-            _ => Self::Reserved(tag),
+            Tag::CpuArch(arch) => Self::Arch(arch),
+            _ => Self::Reserved(Box::new(tag)),
         }
     }
 }
@@ -2300,14 +2300,5 @@ impl<'a> Display for AlsoCompatWith<'a> {
             Self::Arch(arch) => write!(f, "{}", arch),
             Self::Reserved(tag) => write!(f, "<reserved: {:?}>", tag),
         }
-    }
-}
-
-#[derive(Clone, PartialEq, Eq, Debug, Hash, Default)]
-pub struct Conform<'a>(pub &'a str);
-
-impl<'a> Display for Conform<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "\"{}\"", self.0)
     }
 }
