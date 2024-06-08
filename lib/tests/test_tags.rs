@@ -2,7 +2,7 @@ use arm_attr::{enums::*, globals::*, read::Endian, tag::Tag, BuildAttrs};
 
 macro_rules! assert_tag {
     ($attr:expr, $tag:expr) => {
-        assert_eq!($attr.next().unwrap().unwrap(), $tag)
+        assert_eq!($attr.next(), Some($tag))
     };
 }
 
@@ -75,7 +75,7 @@ fn test_tags() {
     let subsection = subsections.next().unwrap();
     assert!(subsection.is_aeabi());
 
-    let mut attributes = subsection.into_public_attr_iter().unwrap();
+    let mut attributes = subsection.into_public_tag_iter().unwrap();
     assert_tag!(attributes, (0, Tag::File { end_offset: 149 }));
     assert_tag!(attributes, (5, Tag::CpuRawName("V5TE")));
     assert_tag!(attributes, (11, Tag::CpuName(CpuName::Arm946ES)));

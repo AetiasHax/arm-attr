@@ -114,9 +114,9 @@ impl<'a> Subsection<'a> {
 }
 
 impl<'a> Subsection<'a> {
-    pub fn into_public_attr_iter(self) -> Result<PublicAttrIter<'a>, PublicAttrsError> {
+    pub fn into_public_tag_iter(self) -> Result<PublicTagIter<'a>, PublicAttrsError> {
         if self.is_aeabi() {
-            Ok(PublicAttrIter {
+            Ok(PublicTagIter {
                 cursor: Cursor::new(self.data),
                 endian: self.endian,
             })
@@ -127,10 +127,15 @@ impl<'a> Subsection<'a> {
 
     pub fn into_public_attributes(self) -> Result<File<'a>, PublicAttrsError> {
         let data_len = self.data.len();
-        let mut tags = self.into_public_attr_iter()?.map(|a| a.map_err(PublicAttrsError::Tag));
 
-        let first_tag = tags.next().unwrap_or(Err(PublicAttrsError::NoTags))?;
-        if let (_, Tag::File { end_offset }) = first_tag {
+        let mut cursor = Cursor::new(self.data);
+        let first_tag = match Tag::read(&mut cursor, self.endian) {
+            Ok(tag) => tag,
+            Err(TagError::Read(ReadError::Eof)) => return Err(PublicAttrsError::NoTags),
+            Err(e) => return Err(PublicAttrsError::Tag(e)),
+        };
+
+        if let Tag::File { end_offset } = first_tag {
             if end_offset as usize != data_len {
                 return Err(PublicAttrsError::ScopeEndsBeforeParent);
             }
@@ -143,8 +148,13 @@ impl<'a> Subsection<'a> {
         let mut curr_section = None;
         let mut curr_symbol = None;
 
-        for tag in tags {
-            let (offset, tag) = tag?;
+        loop {
+            let offset = cursor.position() as u32;
+            let tag = match Tag::read(&mut cursor, self.endian) {
+                Ok(tag) => tag,
+                Err(TagError::Read(ReadError::Eof)) => break,
+                Err(e) => return Err(PublicAttrsError::Tag(e)),
+            };
 
             if let Some((end_offset, _)) = curr_symbol {
                 if offset >= end_offset {
@@ -253,20 +263,19 @@ impl<'a> Subsection<'a> {
     }
 }
 
-pub struct PublicAttrIter<'a> {
+pub struct PublicTagIter<'a> {
     cursor: Cursor<&'a [u8]>,
     endian: Endian,
 }
 
-impl<'a> Iterator for PublicAttrIter<'a> {
-    type Item = Result<(u32, Tag<'a>), TagError>;
+impl<'a> Iterator for PublicTagIter<'a> {
+    type Item = (u32, Tag<'a>);
 
     fn next(&mut self) -> Option<Self::Item> {
         let offset = self.cursor.position() as u32;
         match Tag::read(&mut self.cursor, self.endian) {
-            Ok(tag) => Some(Ok((offset, tag))),
-            Err(TagError::Read(ReadError::Eof)) => None,
-            Err(e) => Some(Err(e)),
+            Ok(tag) => Some((offset, tag)),
+            Err(_) => None,
         }
     }
 }
