@@ -30,6 +30,8 @@ pub enum PublicAttrsError {
     NoTags,
     #[error("expected first tag to be a file tag")]
     NoFileTag,
+    #[error("expected to be in section scope")]
+    NoSectionScope,
 }
 
 #[derive(Error, Debug)]

@@ -56,7 +56,7 @@ fn main() -> Result<()> {
         println!("    File scope:");
         println!(
             "{}",
-            attributes.file_scope.display(AttributeDisplayOptions {
+            attributes.attributes.display(AttributeDisplayOptions {
                 indent: 8,
                 show_defaults: args.show_defaults,
                 show_target: show_all || args.show_target,

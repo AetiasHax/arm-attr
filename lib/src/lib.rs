@@ -13,7 +13,7 @@ use std::{
 use enums::*;
 use error::{BuildAttrError, PublicAttrsError, ReadError, TagError};
 use read::{read_string, read_u32, Endian};
-use tag::{Scope, Tag};
+use tag::Tag;
 
 pub struct BuildAttrs<'a> {
     data: &'a [u8],
@@ -121,32 +121,37 @@ impl<'a> Subsection<'a> {
         }
     }
 
-    pub fn into_public_attributes(self) -> Result<PublicAttributes<'a>, PublicAttrsError> {
+    pub fn into_public_attributes(self) -> Result<File<'a>, PublicAttrsError> {
         let mut tags = self.into_public_attr_iter()?.map(|a| a.map_err(PublicAttrsError::Tag));
 
         let first_tag = tags.next().unwrap_or(Err(PublicAttrsError::NoTags))?;
         if !matches!(first_tag, Tag::File { size: _ }) {
             return Err(PublicAttrsError::NoFileTag);
         }
-        let first_scope = Scope::new(first_tag.clone()).map_err(PublicAttrsError::Tag)?;
 
-        let mut file_scope = AttributeScope::default();
-        let mut enclosed_scopes: HashMap<Scope, AttributeScope> = HashMap::new();
-        let mut attrs = if first_scope == Scope::File {
-            &mut file_scope
-        } else {
-            enclosed_scopes.entry(first_scope).or_default()
-        };
+        let mut file = File::default();
+        let mut attrs = &mut file.attributes;
+        let mut curr_section = None;
 
         for tag in tags {
             let tag = tag?;
             match tag {
                 Tag::File { size: _ } => {
-                    attrs = &mut file_scope;
+                    attrs = &mut file.attributes;
+                    curr_section = None;
                 }
-                Tag::Section { size: _, sections: _ } | Tag::Symbol { size: _, symbols: _ } => {
-                    let new_scope = Scope::new(tag).map_err(PublicAttrsError::Tag)?;
-                    attrs = enclosed_scopes.entry(new_scope).or_default();
+                Tag::Section { size: _, sections } => {
+                    let section = file.sections.entry(sections).or_default();
+                    attrs = &mut section.attributes;
+                    curr_section = Some(sections);
+                }
+                Tag::Symbol { size: _, symbols } => {
+                    if let Some(sections) = &curr_section {
+                        let symbol = file.sections.entry(sections).or_default().symbols.entry(symbols).or_default();
+                        attrs = &mut symbol.attributes;
+                    } else {
+                        return Err(PublicAttrsError::NoSectionScope);
+                    }
                 }
                 Tag::CpuRawName(name) => attrs.cpu_raw_name = Some(name),
                 Tag::CpuName(name) => attrs.cpu_name = Some(name),
@@ -197,10 +202,18 @@ impl<'a> Subsection<'a> {
             }
         }
 
-        Ok(PublicAttributes {
-            file_scope,
-            enclosed_scopes,
-        })
+        if !file.attributes.no_defaults {
+            for section in file.sections.values_mut() {
+                section.attributes.inherit(&file.attributes);
+                if !section.attributes.no_defaults {
+                    for symbol in section.symbols.values_mut() {
+                        symbol.attributes.inherit(&section.attributes);
+                    }
+                }
+            }
+        }
+
+        Ok(file)
     }
 }
 
@@ -221,13 +234,27 @@ impl<'a> Iterator for PublicAttrIter<'a> {
     }
 }
 
-pub struct PublicAttributes<'a> {
-    pub file_scope: AttributeScope<'a>,
-    pub enclosed_scopes: HashMap<Scope<'a>, AttributeScope<'a>>,
+#[derive(Default)]
+pub struct File<'a> {
+    pub attributes: Attributes<'a>,
+    /// Maps list of section indices to a section group
+    pub sections: HashMap<&'a [u8], SectionGroup<'a>>,
 }
 
 #[derive(Default)]
-pub struct AttributeScope<'a> {
+pub struct SectionGroup<'a> {
+    pub attributes: Attributes<'a>,
+    /// Maps list of symbol values to a symbol group
+    pub symbols: HashMap<&'a [u8], SymbolGroup<'a>>,
+}
+
+#[derive(Default)]
+pub struct SymbolGroup<'a> {
+    pub attributes: Attributes<'a>,
+}
+
+#[derive(Default)]
+pub struct Attributes<'a> {
     // Target-related attributes
     pub cpu_raw_name: Option<&'a str>,
     pub cpu_name: Option<CpuName<'a>>,
@@ -281,14 +308,69 @@ pub struct AttributeScope<'a> {
     pub no_defaults: bool,
 }
 
-impl<'a> AttributeScope<'a> {
+impl<'a> Attributes<'a> {
+    fn inherit(&mut self, from: &Attributes<'a>) {
+        macro_rules! inherit {
+            ($to:ident, $from:ident, $tag:ident) => {
+                $to.$tag = $to.$tag.or($from.$tag)
+            };
+        }
+        inherit!(self, from, cpu_raw_name);
+        inherit!(self, from, cpu_name);
+        inherit!(self, from, cpu_arch);
+        inherit!(self, from, cpu_arch_profile);
+        inherit!(self, from, arm_isa_use);
+        inherit!(self, from, thumb_isa_use);
+        inherit!(self, from, fp_arch);
+        inherit!(self, from, wmmx_arch);
+        inherit!(self, from, asimd_arch);
+        inherit!(self, from, mve_arch);
+        inherit!(self, from, fp_hp_ext);
+        inherit!(self, from, cpu_unaligned_access);
+        inherit!(self, from, t2ee_use);
+        inherit!(self, from, virtual_use);
+        inherit!(self, from, mp_ext_use);
+        inherit!(self, from, div_use);
+        inherit!(self, from, dsp_ext);
+        inherit!(self, from, pac_ext);
+        inherit!(self, from, bti_ext);
+        inherit!(self, from, pcs_config);
+        inherit!(self, from, abi_pcs_r9_use);
+        inherit!(self, from, abi_pcs_rw_data);
+        inherit!(self, from, abi_pcs_ro_data);
+        inherit!(self, from, abi_pcs_got_use);
+        inherit!(self, from, abi_pcs_wchar_t);
+        inherit!(self, from, abi_enum_size);
+        inherit!(self, from, abi_align_needed);
+        inherit!(self, from, abi_align_preserved);
+        inherit!(self, from, abi_fp_rounding);
+        inherit!(self, from, abi_fp_denormal);
+        inherit!(self, from, abi_fp_exceptions);
+        inherit!(self, from, abi_fp_user_exceptions);
+        inherit!(self, from, abi_fp_number_model);
+        inherit!(self, from, abi_fp_16bit_format);
+        inherit!(self, from, abi_hardfp_use);
+        inherit!(self, from, abi_vfp_args);
+        inherit!(self, from, abi_wmmx_args);
+        inherit!(self, from, frame_pointer_use);
+        inherit!(self, from, bti_use);
+        inherit!(self, from, pacret_use);
+        inherit!(self, from, abi_opt_goals);
+        inherit!(self, from, abi_fp_opt_goals);
+        inherit!(self, from, compat);
+        if self.also_compat_with.is_none() {
+            self.also_compat_with.clone_from(&from.also_compat_with);
+        }
+        inherit!(self, from, conform);
+    }
+
     pub fn display(&self, options: AttributeDisplayOptions) -> AttributeScopeDisplay {
         AttributeScopeDisplay { scope: self, options }
     }
 }
 
 pub struct AttributeScopeDisplay<'a> {
-    scope: &'a AttributeScope<'a>,
+    scope: &'a Attributes<'a>,
     options: AttributeDisplayOptions,
 }
 

@@ -277,25 +277,3 @@ impl<'a> Tag<'a> {
         Ok(tag)
     }
 }
-
-#[derive(Clone, PartialEq, Eq, Debug, Hash)]
-pub enum Scope<'a> {
-    /// Applies to whole file
-    File,
-    /// Applies to given section numbers
-    Sections(&'a [u8]),
-    /// Applies to given symbol numbers
-    Symbols(&'a [u8]),
-}
-
-impl<'a> Scope<'a> {
-    pub fn new(tag: Tag<'a>) -> Result<Self, TagError> {
-        let scope = match tag {
-            Tag::File { size: _ } => Scope::File,
-            Tag::Section { size: _, sections } => Scope::Sections(sections),
-            Tag::Symbol { size: _, symbols } => Scope::Symbols(symbols),
-            _ => return Err(TagError::InvalidScopeTag),
-        };
-        Ok(scope)
-    }
-}
