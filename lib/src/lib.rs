@@ -88,7 +88,7 @@ impl<'a> Iterator for SubsectionIter<'a> {
 pub struct Subsection<'a> {
     data: &'a [u8],
     endian: Endian,
-    vendor_name: String,
+    vendor_name: &'a str,
 }
 
 impl<'a> Subsection<'a> {
@@ -105,7 +105,7 @@ impl<'a> Subsection<'a> {
     }
 
     pub fn vendor_name(&self) -> &str {
-        self.vendor_name.as_str()
+        self.vendor_name
     }
 }
 
@@ -117,17 +117,14 @@ impl<'a> Subsection<'a> {
                 endian: self.endian,
             })
         } else {
-            Err(PublicAttrsError::InvalidName(self.vendor_name))
+            Err(PublicAttrsError::InvalidName(self.vendor_name.to_string()))
         }
     }
 
-    pub fn into_public_attributes(self) -> Result<PublicAttributes, PublicAttrsError> {
-        let tags = self
-            .into_public_attr_iter()?
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(PublicAttrsError::Tag)?;
+    pub fn into_public_attributes(self) -> Result<PublicAttributes<'a>, PublicAttrsError> {
+        let mut tags = self.into_public_attr_iter()?.map(|a| a.map_err(PublicAttrsError::Tag));
 
-        let first_tag = tags.first().ok_or(PublicAttrsError::NoTags)?;
+        let first_tag = tags.next().unwrap_or(Err(PublicAttrsError::NoTags))?;
         if !matches!(first_tag, Tag::File { size: _ }) {
             return Err(PublicAttrsError::NoFileTag);
         }
@@ -142,6 +139,7 @@ impl<'a> Subsection<'a> {
         };
 
         for tag in tags {
+            let tag = tag?;
             match tag {
                 Tag::File { size: _ } => {
                     attrs = &mut file_scope;
@@ -151,7 +149,7 @@ impl<'a> Subsection<'a> {
                     attrs = enclosed_scopes.entry(new_scope).or_default();
                 }
                 Tag::CpuRawName(name) => attrs.cpu_raw_name = Some(name),
-                Tag::CpuName(name) => attrs.cpu_name = Some(CpuName::from(name.as_str())),
+                Tag::CpuName(name) => attrs.cpu_name = Some(CpuName::from(name)),
                 Tag::CpuArch(value) => attrs.cpu_arch = Some(CpuArch::from(value)),
                 Tag::CpuArchProfile(value) => attrs.cpu_arch_profile = Some(CpuArchProfile::from(value)),
                 Tag::ArmIsaUse(value) => attrs.arm_isa_use = Some(ArmIsaUse::from(value)),
@@ -212,7 +210,7 @@ pub struct PublicAttrIter<'a> {
 }
 
 impl<'a> Iterator for PublicAttrIter<'a> {
-    type Item = Result<Tag, TagError>;
+    type Item = Result<Tag<'a>, TagError>;
 
     fn next(&mut self) -> Option<Self::Item> {
         match Tag::read(&mut self.cursor, self.endian) {
@@ -223,16 +221,16 @@ impl<'a> Iterator for PublicAttrIter<'a> {
     }
 }
 
-pub struct PublicAttributes {
-    pub file_scope: AttributeScope,
-    pub enclosed_scopes: HashMap<Scope, AttributeScope>,
+pub struct PublicAttributes<'a> {
+    pub file_scope: AttributeScope<'a>,
+    pub enclosed_scopes: HashMap<Scope<'a>, AttributeScope<'a>>,
 }
 
 #[derive(Default)]
-pub struct AttributeScope {
+pub struct AttributeScope<'a> {
     // CPU
-    pub cpu_raw_name: Option<String>,
-    pub cpu_name: Option<CpuName>,
+    pub cpu_raw_name: Option<&'a str>,
+    pub cpu_name: Option<CpuName<'a>>,
     pub cpu_arch: Option<CpuArch>,
     pub cpu_arch_profile: Option<CpuArchProfile>,
 
@@ -279,15 +277,15 @@ pub struct AttributeScope {
     pub abi_fp_opt_goals: Option<AbiFpOptGoals>,
 
     // Compat
-    pub compat: Option<Compat>,
-    pub also_compat_with: Option<AlsoCompatWith>,
-    pub conform: Option<Conform>,
+    pub compat: Option<Compat<'a>>,
+    pub also_compat_with: Option<AlsoCompatWith<'a>>,
+    pub conform: Option<Conform<'a>>,
 
     // Misc
     pub no_defaults: bool,
 }
 
-impl AttributeScope {
+impl<'a> AttributeScope<'a> {
     pub fn display(&self, indent: usize, show_defaults: bool) -> AttributeScopeDisplay {
         AttributeScopeDisplay {
             scope: self,
@@ -298,7 +296,7 @@ impl AttributeScope {
 }
 
 pub struct AttributeScopeDisplay<'a> {
-    scope: &'a AttributeScope,
+    scope: &'a AttributeScope<'a>,
     indent: usize,
     show_defaults: bool,
 }

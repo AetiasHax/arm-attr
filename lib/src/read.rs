@@ -1,4 +1,7 @@
-use std::io::{BufRead, Cursor, Read};
+use std::{
+    io::{Cursor, Read},
+    str::from_utf8,
+};
 
 use crate::error::ReadError;
 
@@ -26,16 +29,14 @@ pub(crate) fn read_u8(cursor: &mut Cursor<&[u8]>) -> Result<u8, ReadError> {
     }
 }
 
-pub(crate) fn read_uleb128_list(cursor: &mut Cursor<&[u8]>) -> Result<Box<[u8]>, ReadError> {
-    let mut list = vec![];
-    cursor.read_until(0, &mut list).map_err(ReadError::Io)?;
-    if list.last() == Some(&0) {
-        // remove null terminator
-        list.pop();
-        Ok(list.into_boxed_slice())
-    } else {
-        Err(ReadError::Eof)
-    }
+pub(crate) fn read_uleb128_list<'a>(cursor: &mut Cursor<&'a [u8]>) -> Result<&'a [u8], ReadError> {
+    let pos = cursor.position() as usize;
+    let data = cursor.get_mut();
+    let data = &data[pos..];
+    let len = data.iter().position(|x| *x == 0).unwrap_or(data.len());
+    let list = &data[..len];
+    cursor.set_position(pos as u64 + len as u64 + 1);
+    Ok(list)
 }
 
 pub(crate) fn read_u32(cursor: &mut Cursor<&[u8]>, endian: Endian) -> Result<u32, ReadError> {
@@ -50,14 +51,12 @@ pub(crate) fn read_u32(cursor: &mut Cursor<&[u8]>, endian: Endian) -> Result<u32
     }
 }
 
-pub(crate) fn read_string(cursor: &mut Cursor<&[u8]>) -> Result<String, ReadError> {
-    let mut buf = vec![];
-    cursor.read_until(0, &mut buf).map_err(ReadError::Io)?;
-    if buf.last() == Some(&0) {
-        // remove null terminator
-        buf.pop();
-        String::from_utf8(buf).map_err(ReadError::Utf8)
-    } else {
-        Err(ReadError::Eof)
-    }
+pub(crate) fn read_string<'a>(cursor: &mut Cursor<&'a [u8]>) -> Result<&'a str, ReadError> {
+    let pos = cursor.position() as usize;
+    let data = cursor.get_mut();
+    let data = &data[pos..];
+    let len = data.iter().position(|x| *x == 0).unwrap_or(data.len());
+    let list = &data[..len];
+    cursor.set_position(pos as u64 + len as u64 + 1);
+    from_utf8(list).map_err(ReadError::Utf8)
 }

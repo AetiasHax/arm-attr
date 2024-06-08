@@ -3,7 +3,7 @@ use std::fmt::Display;
 use crate::tag::Tag;
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash, Default)]
-pub enum CpuName {
+pub enum CpuName<'a> {
     #[default]
     None,
     /// ARM7EJ-S
@@ -96,11 +96,11 @@ pub enum CpuName {
     CortexA9,
     /// Cortex-A16
     CortexA15,
-    Other(String),
+    Other(&'a str),
 }
 
-impl From<&str> for CpuName {
-    fn from(value: &str) -> Self {
+impl<'a> From<&'a str> for CpuName<'a> {
+    fn from(value: &'a str) -> Self {
         match value {
             "" => Self::None,
             "ARM7EJ-S" => Self::Arm7TejS,
@@ -148,12 +148,12 @@ impl From<&str> for CpuName {
             "Cortex-A8" => Self::CortexA8,
             "Cortex-A9" => Self::CortexA9,
             "Cortex-A16" => Self::CortexA15,
-            _ => Self::Other(value.to_string()),
+            _ => Self::Other(value),
         }
     }
 }
 
-impl Display for CpuName {
+impl<'a> Display for CpuName<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::None => Ok(()),
@@ -2238,18 +2238,18 @@ impl Display for AbiFpOptGoals {
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash, Default)]
-pub enum Compat {
+pub enum Compat<'a> {
     /// This entity has no toolchain-specific requirements.
     #[default]
     Always,
     /// This entity conforms to the ABI when built by the given toolchain.
-    ByToolchain(String),
+    ByToolchain(&'a str),
     /// This entity does not conform to the ABI, but can be used privately by given flag and vendor name.
-    Private { flag: u8, vendor: String },
+    Private { flag: u8, vendor: &'a str },
 }
 
-impl Compat {
-    pub fn new(flag: u8, vendor: String) -> Self {
+impl<'a> Compat<'a> {
+    pub fn new(flag: u8, vendor: &'a str) -> Self {
         match flag {
             0 => Self::Always,
             1 => Self::ByToolchain(vendor),
@@ -2266,7 +2266,7 @@ impl Compat {
     }
 }
 
-impl Display for Compat {
+impl<'a> Display for Compat<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Always => write!(f, "Always"),
@@ -2277,15 +2277,15 @@ impl Display for Compat {
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash, Default)]
-pub enum AlsoCompatWith {
+pub enum AlsoCompatWith<'a> {
     #[default]
     None,
     Arch(CpuArch),
-    Unknown(Tag),
+    Unknown(Tag<'a>),
 }
 
-impl AlsoCompatWith {
-    pub fn new(tag: Tag) -> Self {
+impl<'a> AlsoCompatWith<'a> {
+    pub fn new(tag: Tag<'a>) -> Self {
         match tag {
             Tag::CpuArch(arch) => Self::Arch(CpuArch::from(arch)),
             _ => Self::Unknown(tag),
@@ -2293,7 +2293,7 @@ impl AlsoCompatWith {
     }
 }
 
-impl Display for AlsoCompatWith {
+impl<'a> Display for AlsoCompatWith<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::None => Ok(()),
@@ -2304,9 +2304,9 @@ impl Display for AlsoCompatWith {
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash, Default)]
-pub struct Conform(pub String);
+pub struct Conform<'a>(pub &'a str);
 
-impl Display for Conform {
+impl<'a> Display for Conform<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "\"{}\"", self.0)
     }

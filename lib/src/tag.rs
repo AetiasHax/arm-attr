@@ -9,17 +9,17 @@ use crate::{
 };
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
-pub enum Tag {
+pub enum Tag<'a> {
     /// Tag_File
     File { size: u32 },
     /// Tag_Section
-    Section { size: u32, sections: Box<[u8]> },
+    Section { size: u32, sections: &'a [u8] },
     /// Tag_Symbol
-    Symbol { size: u32, symbols: Box<[u8]> },
+    Symbol { size: u32, symbols: &'a [u8] },
     /// Tag_CPU_raw_name
-    CpuRawName(String),
+    CpuRawName(&'a str),
     /// Tag_CPU_name
-    CpuName(String),
+    CpuName(&'a str),
     /// Tag_CPU_arch
     CpuArch(u8),
     /// Tag_CPU_arch_profile
@@ -73,7 +73,7 @@ pub enum Tag {
     /// Tag_ABI_FP_optimization_goals
     AbiFpOptimizationGoals(u8),
     /// Tag_compatibility
-    Compatibility { flag: u8, vendor_name: String },
+    Compatibility { flag: u8, vendor_name: &'a str },
     /// Tag_CPU_unaligned_access
     CpuUnalignedAccess(u8),
     /// Tag_FP_HP_extension
@@ -95,9 +95,9 @@ pub enum Tag {
     /// Tag_nodefaults
     NoDefaults(u8),
     /// Tag_also_compatible_with
-    AlsoCompatibleWith(Box<Tag>),
+    AlsoCompatibleWith(Box<Tag<'a>>),
     /// Tag_conformance
-    Conformance(String),
+    Conformance(&'a str),
     /// Tag_T2EE_use
     T2EeUse(u8),
     /// Tag_Virtualization_use
@@ -110,7 +110,7 @@ pub enum Tag {
     PacretUse(u8),
 }
 
-impl Tag {
+impl<'a> Tag<'a> {
     pub fn is_uleb128(&self) -> bool {
         !matches!(
             self,
@@ -179,7 +179,7 @@ impl Tag {
         }
     }
 
-    pub(crate) fn read(cursor: &mut Cursor<&[u8]>, endian: Endian) -> Result<Self, TagError> {
+    pub(crate) fn read(cursor: &mut Cursor<&'a [u8]>, endian: Endian) -> Result<Self, TagError> {
         let tag = read_uleb128(cursor).map_err(TagError::Read)?;
         let tag = match tag {
             Tag_File => Tag::File {
@@ -258,17 +258,17 @@ impl Tag {
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
-pub enum Scope {
+pub enum Scope<'a> {
     /// Applies to whole file
     File,
     /// Applies to given section numbers
-    Sections(Box<[u8]>),
+    Sections(&'a [u8]),
     /// Applies to given symbol numbers
-    Symbols(Box<[u8]>),
+    Symbols(&'a [u8]),
 }
 
-impl Scope {
-    pub fn new(tag: Tag) -> Result<Self, TagError> {
+impl<'a> Scope<'a> {
+    pub fn new(tag: Tag<'a>) -> Result<Self, TagError> {
         let scope = match tag {
             Tag::File { size: _ } => Scope::File,
             Tag::Section { size: _, sections } => Scope::Sections(sections),
