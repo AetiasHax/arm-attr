@@ -186,7 +186,7 @@ impl<'a> Subsection<'a> {
                 Tag::MveArch(value) => attrs.mve_arch = Some(MveArch::from(value)),
                 Tag::PacExt(value) => attrs.pac_ext = Some(PacExt::from(value)),
                 Tag::BtiExt(value) => attrs.bti_ext = Some(BtiExt::from(value)),
-                Tag::NoDefaults(_) => attrs.no_defaults = true,
+                Tag::NoDefaults => attrs.no_defaults = true,
                 Tag::AlsoCompatWith(tag) => attrs.also_compat_with = Some(AlsoCompatWith::new(*tag)),
                 Tag::Conform(version) => attrs.conform = Some(Conform(version)),
                 Tag::T2EeUse(value) => attrs.t2ee_use = Some(T2EeUse::from(value)),

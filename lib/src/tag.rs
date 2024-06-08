@@ -93,7 +93,7 @@ pub enum Tag<'a> {
     /// Tag_BTI_extension
     BtiExt(u8),
     /// Tag_nodefaults
-    NoDefaults(u8),
+    NoDefaults,
     /// Tag_also_compatible_with
     AlsoCompatWith(Box<Tag<'a>>),
     /// Tag_conformance
@@ -168,7 +168,7 @@ impl<'a> Tag<'a> {
             Tag::MveArch(_) => Tag_MVE_arch,
             Tag::PacExt(_) => Tag_PAC_extension,
             Tag::BtiExt(_) => Tag_BTI_extension,
-            Tag::NoDefaults(_) => Tag_nodefaults,
+            Tag::NoDefaults => Tag_nodefaults,
             Tag::AlsoCompatWith(_) => Tag_also_compatible_with,
             Tag::Conform(_) => Tag_conformance,
             Tag::T2EeUse(_) => Tag_T2EE_use,
@@ -234,7 +234,13 @@ impl<'a> Tag<'a> {
             Tag_MVE_arch => Tag::MveArch(read_uleb128(cursor).map_err(TagError::Read)?),
             Tag_PAC_extension => Tag::PacExt(read_uleb128(cursor).map_err(TagError::Read)?),
             Tag_BTI_extension => Tag::BtiExt(read_uleb128(cursor).map_err(TagError::Read)?),
-            Tag_nodefaults => Tag::NoDefaults(read_uleb128(cursor).map_err(TagError::Read)?),
+            Tag_nodefaults => {
+                let ignored = read_u8(cursor).map_err(TagError::Read)?;
+                if ignored != 0 {
+                    return Err(TagError::ExpectedNull);
+                }
+                Tag::NoDefaults
+            }
             Tag_also_compatible_with => {
                 let sub_tag = Tag::read(cursor, endian)?;
                 if sub_tag.is_uleb128() {
