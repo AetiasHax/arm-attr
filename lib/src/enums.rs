@@ -2281,14 +2281,14 @@ pub enum AlsoCompatWith<'a> {
     #[default]
     None,
     Arch(CpuArch),
-    Unknown(Tag<'a>),
+    Reserved(Tag<'a>),
 }
 
 impl<'a> AlsoCompatWith<'a> {
     pub fn new(tag: Tag<'a>) -> Self {
         match tag {
             Tag::CpuArch(arch) => Self::Arch(CpuArch::from(arch)),
-            _ => Self::Unknown(tag),
+            _ => Self::Reserved(tag),
         }
     }
 }
@@ -2298,7 +2298,7 @@ impl<'a> Display for AlsoCompatWith<'a> {
         match self {
             Self::None => write!(f, "Nothing"),
             Self::Arch(arch) => write!(f, "{}", arch),
-            Self::Unknown(tag) => write!(f, "<reserved: {:?}>", tag),
+            Self::Reserved(tag) => write!(f, "<reserved: {:?}>", tag),
         }
     }
 }
