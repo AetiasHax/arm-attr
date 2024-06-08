@@ -42,6 +42,7 @@ pub const Tag_ABI_FP_optimization_goals: u8 = 31;
 pub const Tag_compatibility: u8 = 32;
 pub const Tag_CPU_unaligned_access: u8 = 34;
 pub const Tag_FP_HP_extension: u8 = 36;
+/// Deprecated: Use Tag_FP_HP_extension instead
 pub const Tag_VFP_HP_extension: u8 = 36;
 pub const Tag_ABI_FP_16bit_format: u8 = 38;
 pub const Tag_MPextension_use: u8 = 42;
