@@ -236,16 +236,14 @@ impl<'a> Subsection<'a> {
             }
         }
 
-        if !file.attributes.no_defaults {
-            for section in file.sections.values_mut() {
-                if section.attributes.empty() {
-                    section.attributes.inherit(&file.attributes);
-                }
-                if !section.attributes.no_defaults {
-                    for symbol in section.symbols.values_mut() {
-                        if symbol.attributes.empty() {
-                            symbol.attributes.inherit(&section.attributes);
-                        }
+        for section in file.sections.values_mut() {
+            if !file.attributes.no_defaults && section.attributes.empty() {
+                section.attributes.inherit(&file.attributes);
+            }
+            if !section.attributes.no_defaults {
+                for symbol in section.symbols.values_mut() {
+                    if symbol.attributes.empty() {
+                        symbol.attributes.inherit(&section.attributes);
                     }
                 }
             }
@@ -349,51 +347,51 @@ pub struct Attributes<'a> {
 
 impl<'a> Attributes<'a> {
     pub fn empty(&self) -> bool {
-        self.cpu_raw_name.is_some()
-            || self.cpu_name.is_some()
-            || self.cpu_arch.is_some()
-            || self.cpu_arch_profile.is_some()
-            || self.arm_isa_use.is_some()
-            || self.thumb_isa_use.is_some()
-            || self.fp_arch.is_some()
-            || self.wmmx_arch.is_some()
-            || self.asimd_arch.is_some()
-            || self.mve_arch.is_some()
-            || self.fp_hp_ext.is_some()
-            || self.cpu_unaligned_access.is_some()
-            || self.t2ee_use.is_some()
-            || self.virtual_use.is_some()
-            || self.mp_ext_use.is_some()
-            || self.div_use.is_some()
-            || self.dsp_ext.is_some()
-            || self.pac_ext.is_some()
-            || self.bti_ext.is_some()
-            || self.pcs_config.is_some()
-            || self.abi_pcs_r9_use.is_some()
-            || self.abi_pcs_rw_data.is_some()
-            || self.abi_pcs_ro_data.is_some()
-            || self.abi_pcs_got_use.is_some()
-            || self.abi_pcs_wchar_t.is_some()
-            || self.abi_enum_size.is_some()
-            || self.abi_align_needed.is_some()
-            || self.abi_align_preserved.is_some()
-            || self.abi_fp_rounding.is_some()
-            || self.abi_fp_denormal.is_some()
-            || self.abi_fp_exceptions.is_some()
-            || self.abi_fp_user_exceptions.is_some()
-            || self.abi_fp_number_model.is_some()
-            || self.abi_fp_16bit_format.is_some()
-            || self.abi_hardfp_use.is_some()
-            || self.abi_vfp_args.is_some()
-            || self.abi_wmmx_args.is_some()
-            || self.frame_pointer_use.is_some()
-            || self.bti_use.is_some()
-            || self.pacret_use.is_some()
-            || self.abi_opt_goals.is_some()
-            || self.abi_fp_opt_goals.is_some()
-            || self.compat.is_some()
-            || self.also_compat_with.is_some()
-            || self.conform.is_some()
+        self.cpu_raw_name.is_none()
+            && self.cpu_name.is_none()
+            && self.cpu_arch.is_none()
+            && self.cpu_arch_profile.is_none()
+            && self.arm_isa_use.is_none()
+            && self.thumb_isa_use.is_none()
+            && self.fp_arch.is_none()
+            && self.wmmx_arch.is_none()
+            && self.asimd_arch.is_none()
+            && self.mve_arch.is_none()
+            && self.fp_hp_ext.is_none()
+            && self.cpu_unaligned_access.is_none()
+            && self.t2ee_use.is_none()
+            && self.virtual_use.is_none()
+            && self.mp_ext_use.is_none()
+            && self.div_use.is_none()
+            && self.dsp_ext.is_none()
+            && self.pac_ext.is_none()
+            && self.bti_ext.is_none()
+            && self.pcs_config.is_none()
+            && self.abi_pcs_r9_use.is_none()
+            && self.abi_pcs_rw_data.is_none()
+            && self.abi_pcs_ro_data.is_none()
+            && self.abi_pcs_got_use.is_none()
+            && self.abi_pcs_wchar_t.is_none()
+            && self.abi_enum_size.is_none()
+            && self.abi_align_needed.is_none()
+            && self.abi_align_preserved.is_none()
+            && self.abi_fp_rounding.is_none()
+            && self.abi_fp_denormal.is_none()
+            && self.abi_fp_exceptions.is_none()
+            && self.abi_fp_user_exceptions.is_none()
+            && self.abi_fp_number_model.is_none()
+            && self.abi_fp_16bit_format.is_none()
+            && self.abi_hardfp_use.is_none()
+            && self.abi_vfp_args.is_none()
+            && self.abi_wmmx_args.is_none()
+            && self.frame_pointer_use.is_none()
+            && self.bti_use.is_none()
+            && self.pacret_use.is_none()
+            && self.abi_opt_goals.is_none()
+            && self.abi_fp_opt_goals.is_none()
+            && self.compat.is_none()
+            && self.also_compat_with.is_none()
+            && self.conform.is_none()
     }
 
     fn inherit(&mut self, from: &Attributes<'a>) {
