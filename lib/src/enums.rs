@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use crate::tag::Tag;
 
-#[derive(Clone, PartialEq, Eq, Debug, Hash, Default)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum CpuName<'a> {
     #[default]
     None,
@@ -2237,7 +2237,7 @@ impl Display for AbiFpOptGoals {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, Hash, Default)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum Compat<'a> {
     /// This entity has no toolchain-specific requirements.
     #[default]
@@ -2299,6 +2299,33 @@ impl<'a> Display for AlsoCompatWith<'a> {
             Self::None => write!(f, "Nothing"),
             Self::Arch(arch) => write!(f, "{}", arch),
             Self::Reserved(tag) => write!(f, "<reserved: {:?}>", tag),
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
+pub enum Conform<'a> {
+    #[default]
+    None,
+    V2023Q3,
+    Unknown(&'a str),
+}
+
+impl<'a> From<&'a str> for Conform<'a> {
+    fn from(value: &'a str) -> Self {
+        match value {
+            "2023Q3" => Self::V2023Q3,
+            _ => Self::Unknown(value),
+        }
+    }
+}
+
+impl<'a> Display for Conform<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::None => write!(f, "None"),
+            Self::V2023Q3 => write!(f, "2023Q3"),
+            Self::Unknown(value) => write!(f, "<unknown: {}>", value),
         }
     }
 }

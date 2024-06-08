@@ -277,7 +277,7 @@ pub struct AttributeScope<'a> {
     pub abi_fp_opt_goals: Option<AbiFpOptGoals>,
     pub compat: Option<Compat<'a>>,
     pub also_compat_with: Option<AlsoCompatWith<'a>>,
-    pub conform: Option<&'a str>,
+    pub conform: Option<Conform<'a>>,
     pub no_defaults: bool,
 }
 

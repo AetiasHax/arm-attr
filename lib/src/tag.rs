@@ -98,7 +98,7 @@ pub enum Tag<'a> {
     /// Tag_also_compatible_with
     AlsoCompatWith(AlsoCompatWith<'a>),
     /// Tag_conformance
-    Conform(&'a str),
+    Conform(Conform<'a>),
     /// Tag_T2EE_use
     T2EeUse(T2EeUse),
     /// Tag_Virtualization_use
@@ -266,7 +266,7 @@ impl<'a> Tag<'a> {
                 }
                 Tag::AlsoCompatWith(AlsoCompatWith::new(sub_tag))
             }
-            Tag_conformance => Tag::Conform(read_string(cursor).map_err(TagError::Read)?),
+            Tag_conformance => Tag::Conform(Conform::from(read_string(cursor).map_err(TagError::Read)?)),
             Tag_T2EE_use => Tag::T2EeUse(T2EeUse::from(read_uleb128(cursor).map_err(TagError::Read)?)),
             Tag_Virtualization_use => Tag::VirtualUse(VirtualUse::from(read_uleb128(cursor).map_err(TagError::Read)?)),
             Tag_FramePointer_use => Tag::FramePointerUse(FramePointerUse::from(read_uleb128(cursor).map_err(TagError::Read)?)),
