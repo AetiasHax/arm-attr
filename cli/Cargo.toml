@@ -6,6 +6,7 @@ authors = ["Aetias <aetias@outlook.com>"]
 license = "MIT"
 description = "Lists ARM build attributes of an ELF file"
 repository = "https://github.com/AetiasHax/arm-attr"
+publish = false
 
 [dependencies]
 anyhow = "1.0.86"
