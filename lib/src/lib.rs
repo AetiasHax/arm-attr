@@ -12,8 +12,10 @@ use std::{
 
 use enums::*;
 use error::{BuildAttrError, PublicAttrsError, ReadError, TagError};
-use read::{read_string, read_u32, Endian};
+use read::{read_string, read_u32};
 use tag::Tag;
+
+pub use read::Endian;
 
 pub struct BuildAttrs<'a> {
     data: &'a [u8],
