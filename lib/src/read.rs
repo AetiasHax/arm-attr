@@ -1,7 +1,4 @@
-use std::{
-    io::{Cursor, Read},
-    str::from_utf8,
-};
+use core::str::from_utf8;
 
 use crate::error::ReadError;
 
@@ -11,52 +8,81 @@ pub enum Endian {
     Big,
 }
 
-pub(crate) fn read_uleb128(cursor: &mut Cursor<&[u8]>) -> Result<u8, ReadError> {
-    let mut buf = [0u8; 1];
-    match cursor.read(&mut buf) {
-        Ok(1) => Ok(buf[0] & 0x7f),
-        Ok(_) => Err(ReadError::Eof),
-        Err(e) => Err(ReadError::Io(e)),
+pub(crate) struct Cursor<'a> {
+    pub(crate) data: &'a [u8],
+    pub(crate) pos: usize,
+}
+
+impl<'a> Cursor<'a> {
+    pub(crate) fn new(data: &'a [u8]) -> Self {
+        Self { data, pos: 0 }
+    }
+
+    pub(crate) fn read(&mut self, buf: &mut [u8]) -> usize {
+        let data = &self.data[self.pos..];
+        let len = buf.len().min(data.len());
+        buf[..len].copy_from_slice(&data[..len]);
+        self.pos += len;
+        len
+    }
+
+    pub(crate) fn read_exact(&mut self, buf: &mut [u8]) -> Result<(), ReadError> {
+        let len = self.read(buf);
+        if len == buf.len() {
+            Ok(())
+        } else {
+            Err(ReadError::Eof)
+        }
+    }
+
+    pub(crate) fn position(&self) -> usize {
+        self.pos
+    }
+
+    pub(crate) fn set_position(&mut self, pos: usize) {
+        self.pos = pos;
+    }
+
+    pub(crate) fn get_ref(&self) -> &'a [u8] {
+        &self.data
+    }
+
+    pub(crate) fn remaining(&self) -> &'a [u8] {
+        &self.data[self.pos..]
     }
 }
 
-pub(crate) fn read_u8(cursor: &mut Cursor<&[u8]>) -> Result<u8, ReadError> {
+pub(crate) fn read_uleb128(cursor: &mut Cursor) -> Result<u8, ReadError> {
     let mut buf = [0u8; 1];
-    match cursor.read(&mut buf) {
-        Ok(1) => Ok(buf[0]),
-        Ok(_) => Err(ReadError::Eof),
-        Err(e) => Err(ReadError::Io(e)),
-    }
+    cursor.read_exact(&mut buf)?;
+    Ok(buf[0] & 0x7f)
 }
 
-pub(crate) fn read_uleb128_list<'a>(cursor: &mut Cursor<&'a [u8]>) -> Result<&'a [u8], ReadError> {
-    let pos = cursor.position() as usize;
-    let data = cursor.get_mut();
-    let data = &data[pos..];
+pub(crate) fn read_u8(cursor: &mut Cursor) -> Result<u8, ReadError> {
+    let mut buf = [0u8; 1];
+    cursor.read_exact(&mut buf)?;
+    Ok(buf[0])
+}
+
+pub(crate) fn read_uleb128_list<'a>(cursor: &mut Cursor<'a>) -> Result<&'a [u8], ReadError> {
+    let data = cursor.remaining();
     let len = data.iter().position(|x| *x == 0).unwrap_or(data.len());
-    let list = &data[..len];
-    cursor.set_position(pos as u64 + len as u64 + 1);
-    Ok(list)
+    cursor.set_position(cursor.position() + len + 1);
+    Ok(&data[..len])
 }
 
-pub(crate) fn read_u32(cursor: &mut Cursor<&[u8]>, endian: Endian) -> Result<u32, ReadError> {
+pub(crate) fn read_u32(cursor: &mut Cursor, endian: Endian) -> Result<u32, ReadError> {
     let mut buf = [0u8; 4];
-    match cursor.read(&mut buf) {
-        Ok(4) => Ok(match endian {
-            Endian::Little => u32::from_le_bytes(buf),
-            Endian::Big => u32::from_be_bytes(buf),
-        }),
-        Ok(_) => Err(ReadError::Eof),
-        Err(e) => Err(ReadError::Io(e)),
-    }
+    cursor.read_exact(&mut buf)?;
+    Ok(match endian {
+        Endian::Little => u32::from_le_bytes(buf),
+        Endian::Big => u32::from_be_bytes(buf),
+    })
 }
 
-pub(crate) fn read_string<'a>(cursor: &mut Cursor<&'a [u8]>) -> Result<&'a str, ReadError> {
-    let pos = cursor.position() as usize;
-    let data = cursor.get_mut();
-    let data = &data[pos..];
+pub(crate) fn read_string<'a>(cursor: &mut Cursor<'a>) -> Result<&'a str, ReadError> {
+    let data = cursor.remaining();
     let len = data.iter().position(|x| *x == 0).unwrap_or(data.len());
-    let list = &data[..len];
-    cursor.set_position(pos as u64 + len as u64 + 1);
-    from_utf8(list).map_err(ReadError::Utf8)
+    cursor.set_position(cursor.position() + len + 1);
+    from_utf8(&data[..len]).map_err(ReadError::Utf8)
 }

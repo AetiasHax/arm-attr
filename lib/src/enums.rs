@@ -1,4 +1,5 @@
-use std::fmt::Display;
+use alloc::boxed::Box;
+use core::fmt;
 
 use crate::tag::Tag;
 
@@ -153,8 +154,8 @@ impl<'a> From<&'a str> for CpuName<'a> {
     }
 }
 
-impl<'a> Display for CpuName<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<'a> fmt::Display for CpuName<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => Ok(()),
             Self::Arm7TejS => write!(f, "ARM7EJ-S"),
@@ -321,8 +322,8 @@ impl From<u8> for CpuArch {
     }
 }
 
-impl Display for CpuArch {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for CpuArch {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::PreV4 => write!(f, "Pre-v4"),
             Self::V4 => write!(f, "ARMv4"),
@@ -394,8 +395,8 @@ impl From<u8> for CpuArchProfile {
     }
 }
 
-impl Display for CpuArchProfile {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for CpuArchProfile {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::NotApplicable => write!(f, "N/A"),
             Self::Application => write!(f, "A"),
@@ -437,8 +438,8 @@ impl From<u8> for ArmIsaUse {
     }
 }
 
-impl Display for ArmIsaUse {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for ArmIsaUse {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ArmIsaUse::None => write!(f, "None"),
             ArmIsaUse::Allowed => write!(f, "Allowed"),
@@ -489,8 +490,8 @@ impl From<u8> for ThumbIsaUse {
     }
 }
 
-impl Display for ThumbIsaUse {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for ThumbIsaUse {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::Allowed16Bit => write!(f, "16-bit allowed, including BL"),
@@ -559,8 +560,8 @@ impl From<u8> for FpArch {
     }
 }
 
-impl Display for FpArch {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for FpArch {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::V1 => write!(f, "v1"),
@@ -610,8 +611,8 @@ impl From<u8> for WmmxArch {
     }
 }
 
-impl Display for WmmxArch {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for WmmxArch {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::V1 => write!(f, "v1"),
@@ -663,8 +664,8 @@ impl From<u8> for AsimdArch {
     }
 }
 
-impl Display for AsimdArch {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AsimdArch {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::V1 => write!(f, "SIMDv1"),
@@ -710,8 +711,8 @@ impl From<u8> for MveArch {
     }
 }
 
-impl Display for MveArch {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for MveArch {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::Int => write!(f, "Integer"),
@@ -757,8 +758,8 @@ impl From<u8> for FpHpExt {
     }
 }
 
-impl Display for FpHpExt {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for FpHpExt {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::IfExists => write!(f, "If exists"),
             Self::VfpV3 => write!(f, "VFPv3"),
@@ -798,8 +799,8 @@ impl From<u8> for CpuUnalignedAccess {
     }
 }
 
-impl Display for CpuUnalignedAccess {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for CpuUnalignedAccess {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::Allowed => write!(f, "Allowed"),
@@ -838,8 +839,8 @@ impl From<u8> for T2EeUse {
     }
 }
 
-impl Display for T2EeUse {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for T2EeUse {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::Allowed => write!(f, "Allowed"),
@@ -886,8 +887,8 @@ impl From<u8> for VirtualUse {
     }
 }
 
-impl Display for VirtualUse {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for VirtualUse {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::TrustZone => write!(f, "TrustZone"),
@@ -928,8 +929,8 @@ impl From<u8> for MpExtUse {
     }
 }
 
-impl Display for MpExtUse {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for MpExtUse {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::Allowed => write!(f, "Allowed"),
@@ -972,8 +973,8 @@ impl From<u8> for DivUse {
     }
 }
 
-impl Display for DivUse {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for DivUse {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::IfExists => write!(f, "If exists"),
             Self::None => write!(f, "None"),
@@ -1013,8 +1014,8 @@ impl From<u8> for DspExt {
     }
 }
 
-impl Display for DspExt {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for DspExt {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::IfExists => write!(f, "If exists"),
             Self::Allowed => write!(f, "Allowed"),
@@ -1057,8 +1058,8 @@ impl From<u8> for PacExt {
     }
 }
 
-impl Display for PacExt {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for PacExt {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::OnlyNopSpace => write!(f, "Only NOP space"),
@@ -1102,8 +1103,8 @@ impl From<u8> for BtiExt {
     }
 }
 
-impl Display for BtiExt {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for BtiExt {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::OnlyNopSpace => write!(f, "Only NOP space"),
@@ -1163,8 +1164,8 @@ impl From<u8> for PcsConfig {
     }
 }
 
-impl Display for PcsConfig {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for PcsConfig {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::BarePlatform => write!(f, "Bare platform"),
@@ -1217,8 +1218,8 @@ impl From<u8> for AbiPcsR9Use {
     }
 }
 
-impl Display for AbiPcsR9Use {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AbiPcsR9Use {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::V6 => write!(f, "V6"),
             Self::Sb => write!(f, "SB"),
@@ -1267,8 +1268,8 @@ impl From<u8> for AbiPcsRwData {
     }
 }
 
-impl Display for AbiPcsRwData {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AbiPcsRwData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Abs => write!(f, "Absolute"),
             Self::PcRel => write!(f, "PC-relative"),
@@ -1313,8 +1314,8 @@ impl From<u8> for AbiPcsRoData {
     }
 }
 
-impl Display for AbiPcsRoData {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AbiPcsRoData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Abs => write!(f, "Absolute"),
             Self::PcRel => write!(f, "PC-relative"),
@@ -1358,8 +1359,8 @@ impl From<u8> for AbiPcsGotUse {
     }
 }
 
-impl Display for AbiPcsGotUse {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AbiPcsGotUse {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "Not allowed"),
             Self::Direct => write!(f, "Direct"),
@@ -1403,8 +1404,8 @@ impl From<u8> for AbiPcsWcharT {
     }
 }
 
-impl Display for AbiPcsWcharT {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AbiPcsWcharT {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "Not allowed"),
             Self::Size2 => write!(f, "16-bit"),
@@ -1452,8 +1453,8 @@ impl From<u8> for AbiEnumSize {
     }
 }
 
-impl Display for AbiEnumSize {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AbiEnumSize {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "Not allowed"),
             Self::SmallestSize => write!(f, "Smallest size"),
@@ -1507,8 +1508,8 @@ impl From<u8> for AbiAlignNeeded {
     }
 }
 
-impl Display for AbiAlignNeeded {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AbiAlignNeeded {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::Align8 => write!(f, "8-byte"),
@@ -1563,8 +1564,8 @@ impl From<u8> for AbiAlignPreserved {
     }
 }
 
-impl Display for AbiAlignPreserved {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AbiAlignPreserved {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::Align8 => write!(f, "8-byte"),
@@ -1606,8 +1607,8 @@ impl From<u8> for AbiFpRounding {
     }
 }
 
-impl Display for AbiFpRounding {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AbiFpRounding {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Nearest => write!(f, "Nearest"),
             Self::RunTime => write!(f, "Decides at run-time"),
@@ -1650,8 +1651,8 @@ impl From<u8> for AbiFpDenormal {
     }
 }
 
-impl Display for AbiFpDenormal {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AbiFpDenormal {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::DontCare => write!(f, "Don't care"),
             Self::Ieee754 => write!(f, "Depends on IEEE-754 denormal numbers"),
@@ -1691,8 +1692,8 @@ impl From<u8> for AbiFpExceptions {
     }
 }
 
-impl Display for AbiFpExceptions {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AbiFpExceptions {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::CheckInexact => write!(f, "IEEE-754 inexact exception"),
@@ -1731,8 +1732,8 @@ impl From<u8> for AbiFpUserExceptions {
     }
 }
 
-impl Display for AbiFpUserExceptions {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AbiFpUserExceptions {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::Enabled => write!(f, "Enabled"),
@@ -1779,8 +1780,8 @@ impl From<u8> for AbiFpNumberModel {
     }
 }
 
-impl Display for AbiFpNumberModel {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AbiFpNumberModel {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::Normal => write!(f, "Normal numbers"),
@@ -1825,8 +1826,8 @@ impl From<u8> for AbiFp16BitFormat {
     }
 }
 
-impl Display for AbiFp16BitFormat {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AbiFp16BitFormat {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::Ieee754 => write!(f, "IEEE-754 format"),
@@ -1874,8 +1875,8 @@ impl From<u8> for AbiHardFpUse {
     }
 }
 
-impl Display for AbiHardFpUse {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AbiHardFpUse {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Implied => write!(f, "Implied"),
             Self::DerivedSingle => write!(f, "Derived single-precision"),
@@ -1925,8 +1926,8 @@ impl From<u8> for AbiVfpArgs {
     }
 }
 
-impl Display for AbiVfpArgs {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AbiVfpArgs {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Base => write!(f, "Base variant"),
             Self::Vfp => write!(f, "VFP variant"),
@@ -1971,8 +1972,8 @@ impl From<u8> for AbiWmmxArgs {
     }
 }
 
-impl Display for AbiWmmxArgs {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AbiWmmxArgs {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Base => write!(f, "Base variant"),
             Self::Intel => write!(f, "Intel conventions"),
@@ -2016,8 +2017,8 @@ impl From<u8> for FramePointerUse {
     }
 }
 
-impl Display for FramePointerUse {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for FramePointerUse {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::WithRecords => write!(f, "With frame records"),
@@ -2057,8 +2058,8 @@ impl From<u8> for BtiUse {
     }
 }
 
-impl Display for BtiUse {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for BtiUse {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::Enabled => write!(f, "Enabled"),
@@ -2097,8 +2098,8 @@ impl From<u8> for PacretUse {
     }
 }
 
-impl Display for PacretUse {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for PacretUse {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::Enabled => write!(f, "Enabled"),
@@ -2157,8 +2158,8 @@ impl From<u8> for AbiOptGoals {
     }
 }
 
-impl Display for AbiOptGoals {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AbiOptGoals {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::FavorSpeed => write!(f, "Favor speed, preserve size and debug"),
@@ -2222,8 +2223,8 @@ impl From<u8> for AbiFpOptGoals {
     }
 }
 
-impl Display for AbiFpOptGoals {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AbiFpOptGoals {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::FavorSpeed => write!(f, "Favor speed, preserve size and accuracy"),
@@ -2266,8 +2267,8 @@ impl<'a> Compat<'a> {
     }
 }
 
-impl<'a> Display for Compat<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<'a> fmt::Display for Compat<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Always => write!(f, "Always"),
             Self::ByToolchain(toolchain) => write!(f, "By toolchain '{}'", toolchain),
@@ -2293,8 +2294,8 @@ impl<'a> AlsoCompatWith<'a> {
     }
 }
 
-impl<'a> Display for AlsoCompatWith<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<'a> fmt::Display for AlsoCompatWith<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "Nothing"),
             Self::Arch(arch) => write!(f, "{}", arch),
@@ -2320,8 +2321,8 @@ impl<'a> From<&'a str> for Conform<'a> {
     }
 }
 
-impl<'a> Display for Conform<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<'a> fmt::Display for Conform<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::None => write!(f, "None"),
             Self::V2023Q3 => write!(f, "2023Q3"),

@@ -1,12 +1,10 @@
 #![allow(non_upper_case_globals)]
 
-use std::io::Cursor;
-
 use crate::{
     enums::*,
     error::TagError,
     globals::*,
-    read::{read_string, read_u32, read_u8, read_uleb128, read_uleb128_list, Endian},
+    read::{read_string, read_u32, read_u8, read_uleb128, read_uleb128_list, Cursor, Endian},
 };
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
@@ -207,7 +205,7 @@ impl<'a> Tag<'a> {
         }
     }
 
-    pub(crate) fn read(cursor: &mut Cursor<&'a [u8]>, endian: Endian) -> Result<Self, TagError> {
+    pub(crate) fn read(cursor: &mut Cursor<'a>, endian: Endian) -> Result<Self, TagError> {
         let pos = cursor.position() as u32;
         let tag = read_uleb128(cursor).map_err(TagError::Read)?;
         let tag = match tag {
