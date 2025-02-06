@@ -1,4 +1,5 @@
-use std::{io, str::Utf8Error};
+use alloc::string::String;
+use core::str::Utf8Error;
 
 use thiserror::Error;
 
@@ -12,8 +13,6 @@ pub enum BuildAttrError {
 
 #[derive(Error, Debug)]
 pub enum ReadError {
-    #[error("IO error")]
-    Io(io::Error),
     #[error("UTF8 error")]
     Utf8(Utf8Error),
     #[error("no more data (EOF reached)")]

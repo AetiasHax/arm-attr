@@ -1,18 +1,18 @@
+#![no_std]
+extern crate alloc;
+
 pub mod enums;
 pub mod error;
 pub mod globals;
 pub mod read;
 pub mod tag;
 
-use std::{
-    collections::HashMap,
-    fmt::Display,
-    io::{Cursor, Seek},
-};
+use alloc::{collections::BTreeMap, string::ToString};
+use core::fmt;
 
 use enums::*;
 use error::{BuildAttrError, PublicAttrsError, ReadError, TagError};
-use read::{read_string, read_u32};
+use read::{read_string, read_u32, Cursor};
 use tag::Tag;
 
 pub use read::Endian;
@@ -44,7 +44,6 @@ impl<'a> BuildAttrs<'a> {
     pub fn subsections(&self) -> SubsectionIter {
         let data = &self.data[1..];
         SubsectionIter {
-            data,
             cursor: Cursor::new(data),
             endian: self.endian,
         }
@@ -52,8 +51,7 @@ impl<'a> BuildAttrs<'a> {
 }
 
 pub struct SubsectionIter<'a> {
-    data: &'a [u8],
-    cursor: Cursor<&'a [u8]>,
+    cursor: Cursor<'a>,
     endian: Endian,
 }
 
@@ -73,21 +71,19 @@ impl<'a> Iterator for SubsectionIter<'a> {
         };
         let name_size = vendor_name.len() + 1;
 
-        let pos = self.cursor.position() as usize;
+        let pos = self.cursor.position();
         let end = pos + length as usize - name_size - 4;
-        if end > self.data.len() {
+        self.cursor.set_position(end);
+        let data = self.cursor.get_ref();
+        if end > data.len() {
             return Some(Err(ReadError::OutOfBounds));
         }
-        let data = &self.data[pos..end];
-        if let Err(e) = self.cursor.seek(std::io::SeekFrom::Current(data.len() as i64)) {
-            Some(Err(ReadError::Io(e)))
-        } else {
-            Some(Ok(Subsection {
-                data,
-                endian: self.endian,
-                vendor_name,
-            }))
-        }
+        let data = &data[pos..end];
+        Some(Ok(Subsection {
+            data,
+            endian: self.endian,
+            vendor_name,
+        }))
     }
 }
 
@@ -266,7 +262,7 @@ impl<'a> Subsection<'a> {
 }
 
 pub struct PublicTagIter<'a> {
-    cursor: Cursor<&'a [u8]>,
+    cursor: Cursor<'a>,
     endian: Endian,
 }
 
@@ -286,14 +282,14 @@ impl<'a> Iterator for PublicTagIter<'a> {
 pub struct File<'a> {
     pub attributes: Attributes<'a>,
     /// Maps list of section indices to a section group
-    pub sections: HashMap<&'a [u8], SectionGroup<'a>>,
+    pub sections: BTreeMap<&'a [u8], SectionGroup<'a>>,
 }
 
 #[derive(Default)]
 pub struct SectionGroup<'a> {
     pub attributes: Attributes<'a>,
     /// Maps list of symbol values to a symbol group
-    pub symbols: HashMap<&'a [u8], SymbolGroup<'a>>,
+    pub symbols: BTreeMap<&'a [u8], SymbolGroup<'a>>,
 }
 
 #[derive(Default)]
@@ -479,12 +475,12 @@ pub struct AttributeDisplayOptions {
 }
 
 impl<'a> AttributeScopeDisplay<'a> {
-    fn display_field<T: Display + Default>(
+    fn display_field<T: fmt::Display + Default>(
         &self,
-        f: &mut std::fmt::Formatter<'_>,
+        f: &mut fmt::Formatter<'_>,
         field: &str,
         value: &Option<T>,
-    ) -> std::fmt::Result {
+    ) -> fmt::Result {
         if let Some(value) = value {
             writeln!(f, "{}{} : {}", format_args!("{: >1$}", "", self.options.indent), field, value)
         } else if self.options.show_defaults {
@@ -501,7 +497,7 @@ impl<'a> AttributeScopeDisplay<'a> {
         }
     }
 
-    fn display_quote(&self, f: &mut std::fmt::Formatter<'_>, field: &str, value: &Option<&str>) -> std::fmt::Result {
+    fn display_quote(&self, f: &mut fmt::Formatter<'_>, field: &str, value: &Option<&str>) -> fmt::Result {
         if let Some(value) = value {
             writeln!(
                 f,
@@ -523,8 +519,8 @@ impl<'a> AttributeScopeDisplay<'a> {
     }
 }
 
-impl<'a> Display for AttributeScopeDisplay<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<'a> fmt::Display for AttributeScopeDisplay<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let scope = self.scope;
         if self.options.show_target {
             self.display_quote(f, "CPU raw name .........", &scope.cpu_raw_name)?;
