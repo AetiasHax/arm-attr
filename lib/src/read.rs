@@ -44,7 +44,7 @@ impl<'a> Cursor<'a> {
     }
 
     pub(crate) fn get_ref(&self) -> &'a [u8] {
-        &self.data
+        self.data
     }
 
     pub(crate) fn remaining(&self) -> &'a [u8] {

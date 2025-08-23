@@ -41,7 +41,7 @@ impl<'a> BuildAttrs<'a> {
         self.data[0]
     }
 
-    pub fn subsections(&self) -> SubsectionIter {
+    pub fn subsections(&self) -> SubsectionIter<'_> {
         let data = &self.data[1..];
         SubsectionIter {
             cursor: Cursor::new(data),
@@ -456,7 +456,7 @@ impl<'a> Attributes<'a> {
         inherit!(self, from, conform);
     }
 
-    pub fn display(&self, options: AttributeDisplayOptions) -> AttributeScopeDisplay {
+    pub fn display(&self, options: AttributeDisplayOptions) -> AttributeScopeDisplay<'_> {
         AttributeScopeDisplay { scope: self, options }
     }
 }
